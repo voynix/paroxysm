@@ -1,0 +1,6 @@
+# ignore compilation products
+a.out
+*.o
+
+# ignore makefile byproducts
+Makefile.dep
