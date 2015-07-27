@@ -4,3 +4,6 @@ a.out
 
 # ignore makefile byproducts
 Makefile.dep
+
+# ignore .gitattributes file
+.gitattributes
