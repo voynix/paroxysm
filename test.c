@@ -3,6 +3,7 @@
 /* make_name() */
 
 void test_make_name(){
+    TEST_GROUP_INDICATOR("make_name()")
     char* testString = "test";
     
     Name testName = make_name(testString, 5, NULL);
@@ -53,6 +54,7 @@ void test_add_name_existing_name(){
 }
 
 void run_add_name_tests(){
+    TEST_GROUP_INDICATOR("add_name()")
     test_add_name_null_namelist();
     test_add_name_new_name();
     test_add_name_existing_name();
@@ -86,22 +88,102 @@ void test_make_literal_token(){
 }
 
 void run_make_token_tests(){
+    TEST_GROUP_INDICATOR("make_..._token()")
     test_make_builtin_token();
     test_make_name_token();
     test_make_literal_token();
 }
 
+/* free_token() */
+
+void test_free_token(){
+    TEST_GROUP_INDICATOR("free_token()")
+    Token t = make_builtin_token(DIVIDE, NULL);
+    free_token(&t);
+    assert(t == NULL);
+}
+
+/* get_token_end */
+
+void test_get_token_end_first_token(){
+    char* foo = "outn \t -12 hella";
+    assert(get_token_end(foo, 0) == 4);
+}
+
+void test_get_token_end_middle_token(){
+    char* foo = "outn \t-12  hella";
+    assert(get_token_end(foo, 6) == 9);
+}
+
+void test_get_token_end_last_token(){
+    char* foo = "outn -12  hella";
+    assert(get_token_end(foo, 10) == 15);
+}
+
+void test_get_token_end_single_token(){
+    char* foo = "expand";
+    assert(get_token_end(foo, 0) == 6);
+}
+
+void test_get_token_end_bad_pos(){
+    char* foo = "outn -12 hella";
+    assert(get_token_end(foo, 20) == EOL);
+}
+
+void run_get_token_end_tests(){
+    TEST_GROUP_INDICATOR("get_token_end()")
+    test_get_token_end_first_token();
+    test_get_token_end_middle_token();
+    test_get_token_end_last_token();
+    test_get_token_end_single_token();
+    test_get_token_end_bad_pos();
+}
+
+/* get_token_start */
+
+void test_get_token_start_first_token(){
+    char* foo = "outn \t -12 hella";
+    assert(get_token_start(foo, 0) == 0);
+}
+
+void test_get_token_start_middle_token(){
+    char* foo = "outn \t-12  hella";
+    assert(get_token_start(foo, 4) == 6);
+}
+
+void test_get_token_start_last_token(){
+    char* foo = "outn -12  hella";
+    assert(get_token_start(foo, 15) == EOL);
+}
+
+void test_get_token_start_single_token(){ // this is redundant with ...first_token, but eh
+    char* foo = "expand";
+    assert(get_token_start(foo, 0) == 0);
+}
+
+void test_get_token_start_bad_pos(){
+    char* foo = "outn -12 hella";
+    assert(get_token_start(foo, 20) == EOL);
+}
+
+void run_get_token_start_tests(){
+    TEST_GROUP_INDICATOR("get_token_start()")
+    test_get_token_start_first_token();
+    test_get_token_start_middle_token();
+    test_get_token_start_last_token();
+    test_get_token_start_single_token();
+    test_get_token_start_bad_pos();
+}
+
 /* END TEST DECLARATIONS */
 
 int main(int argc, char** argv){
-    printf("%s", "Testing make_name()...\n");
     test_make_name();
-    
-    printf("%s", "Testing add_name()...\n");
     run_add_name_tests();
-    
-    printf("%s", "Testing make_..._token()...\n");
     run_make_token_tests();
+    test_free_token();
+    run_get_token_end_tests();
+    run_get_token_start_tests();
     
-    printf("%s", "All tests passed!\n");
+    printf("All tests passed!\n");
 }
