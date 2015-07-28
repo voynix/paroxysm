@@ -11,7 +11,7 @@
 CC = clang
 CFLAGS = -Wall -g
 SRCS = lex.c
-TEST_SRCS = test.c
+TEST_SRCS = test.c lex-test.c
 OBJS = ${SRCS:.c=.o}
 TEST_OBJS = $(TEST_SRCS:.c=.o)
 
