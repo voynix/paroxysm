@@ -1,13 +1,3 @@
-# Instructions:
-#
-# 1. Add source files to the line beginning with SRCS = main.cc.
-# 2. To build the dependency list, type 'make depend'.  You'll need to
-#    do this whenever you add a source file.
-# 3. To build the project, type 'make'.
-# 4. To start over, type 'make clean', which does not clean the
-#    dependency list.
-#
-
 CC = clang
 CFLAGS = -Wall -g
 SRCS = lex.c
@@ -35,6 +25,9 @@ Makefile.dep:
 
 clean:
 	rm -f $(OBJS) $(TEST_OBJS) a.out core
+
+loc:
+	wc -l *.c *.h
 
 include Makefile.dep
 
