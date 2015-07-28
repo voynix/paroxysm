@@ -41,12 +41,24 @@ char* builtin_strs[NUM_BUILTINS] = {"expand", "collapse", "init", "term", "set",
  * Returns a new NameRec with the given values
  */
 Name make_name(char* fullName, NameType name, Name next){
+    assert(fullName != NULL);
     Name retVal = (Name) malloc(sizeof(NameRec));
     assert(retVal != NULL);
-    retVal->fullName = fullName;
+    retVal->fullName = (FullNameType) malloc(strlen(fullName) + 1);
+    strncpy(retVal->fullName, fullName, strlen(fullName) + 1);
     retVal->name = name;
     retVal->next = next;
     return retVal;
+}
+
+/*
+ * Frees a Name, including its internal char*
+ */
+void free_name(Name* name){
+    assert(*name != NULL);
+    free((*name)->fullName);
+    free(*name);
+    *name = NULL;
 }
 
 /*
@@ -54,6 +66,7 @@ Name make_name(char* fullName, NameType name, Name next){
  * Returns the name for the given fullName
  */
 NameType add_name(Name* nameList, char* fullName){
+    assert(fullName != NULL);
     Name list = *nameList;
     while(list != NULL)
         if(strcmp(fullName, list->fullName) == 0)
@@ -69,6 +82,9 @@ NameType add_name(Name* nameList, char* fullName){
     return (*nameList)->name;
 }
 
+/*
+ * Make a token of the appropriate type with the given value
+ */
 Token make_builtin_token(BuiltinType builtin, Token prev){
     Token retVal = (Token) malloc(sizeof(TokenRec));
     assert(retVal != NULL);
@@ -102,9 +118,13 @@ Token make_literal_token(LiteralType literal, Token prev){
     return retVal;
 }
 
-void free_token(Token* t){
-    free(*t);
-    *t = NULL;
+/*
+ * Frees a token
+ */
+void free_token(Token* token){
+    assert(*token != NULL);
+    free(*token);
+    *token = NULL;
 }
 
 /*
@@ -153,17 +173,17 @@ int get_token_start(char* input, int start_pos){
  * with the new names in the token stream
  */
 void tokenize_string(char* input, Token* tokens, Name* names){
-    assert(tokens == NULL); // you must give an empty list of tokens
+    assert(*tokens == NULL); // you must give an empty list of tokens
     
     int token_start = 0;
     int token_end = 0;
-    int token_len;
+    int token_len = EOL;
 
     Token lastToken = *tokens;
     
     while(1){
-        token_start = get_token_start(input, token_start);
-        token_end = get_token_end(input, token_end);
+        token_start = get_token_start(input, token_end);
+        token_end = get_token_end(input, token_start);
         token_len = token_end - token_start;
         
         if(token_start == EOL) // we've hit the end of line, so we're done
@@ -172,13 +192,14 @@ void tokenize_string(char* input, Token* tokens, Name* names){
         assert(token_len > 0);
         
         char* tok_start = input + token_start;
-        char* tok_str = (char *) malloc(token_len + 1);
+        char* tok_str = (char*) malloc(token_len + 1);
         
         strncpy(tok_str, tok_start, token_len);
         tok_str[token_len] = '\0';
         
         Token newToken = NULL;
-        if((tok_str[0] == '-') || (tok_str[0] >= '0' && tok_str[0] <= '9')){ // literal
+        // first check is to disambugate negative numbers from MINUS
+        if((tok_str[0] == '-' && strlen(tok_str) > 1) || (tok_str[0] >= '0' && tok_str[0] <= '9')){ // literal
             newToken = make_literal_token(atoi(tok_str), lastToken);
             // TODO: check return value on atoi here first and error if they fucked it up...
         } else {
@@ -196,6 +217,8 @@ void tokenize_string(char* input, Token* tokens, Name* names){
         if(*tokens == NULL)
             *tokens = newToken;
         lastToken = newToken;
+        
+        free(tok_str);
     }
     
     

@@ -9,6 +9,7 @@ typedef enum {BUILTIN, NAME, LITERAL} TokenType;
 typedef enum {EXPAND, COLLAPSE, INIT, TERM, SET, PATH, BIFURC, OUTN, OUTC, AND, OR, PLUS, MINUS, MULTIPLY, DIVIDE, SHIFT_LEFT, SHIFT_RIGHT, LESS_THAN, GREATER_THAN, BIT_AND, BIT_OR, NEG, L_PAREN, R_PAREN} BuiltinType;
 typedef unsigned int NameType;
 typedef int LiteralType;
+typedef char* FullNameType;
 
 typedef struct TokenRec {
     TokenType type;
@@ -22,13 +23,14 @@ typedef struct TokenRec {
 typedef struct TokenRec* Token;
 
 typedef struct NameRec {
-    char* fullName;
+    FullNameType fullName;
     NameType name;
     struct NameRec* next;
 } NameRec;
 typedef struct NameRec* Name;
 
 Name make_name(char* fullName, NameType name, Name next);
+void free_name(Name* name);
 NameType add_name(Name* nameList, char* fullName);
 
 Token make_builtin_token(BuiltinType builtin, Token prev);

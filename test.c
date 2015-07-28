@@ -13,6 +13,18 @@ void test_make_name(){
     assert(testName->next == NULL);
 }
 
+/* free_name() */
+
+void test_free_name(){
+    TEST_GROUP_INDICATOR("free_name()")
+    Name test_name = make_name("foo", INITIAL_NAME, NULL);
+    
+    free_name(&test_name);
+    
+    assert(test_name == NULL);
+    // we don't really have a way to test that the char* was freed...
+}
+
 /* add_name() */
 
 void test_add_name_null_namelist(){
@@ -99,7 +111,9 @@ void run_make_token_tests(){
 void test_free_token(){
     TEST_GROUP_INDICATOR("free_token()")
     Token t = make_builtin_token(DIVIDE, NULL);
+    
     free_token(&t);
+    
     assert(t == NULL);
 }
 
@@ -175,15 +189,135 @@ void run_get_token_start_tests(){
     test_get_token_start_bad_pos();
 }
 
+/* tokenize_string */
+
+void test_tokenize_string_positive_literal_token(){
+    Token tokens = NULL;
+    Name names = NULL;
+    char* foo = (char*) malloc(3);
+    foo[0] = '1';
+    foo[1] = '3';
+    foo[2] = '\0';
+    
+    tokenize_string(foo, &tokens, &names);
+    
+    assert(tokens != NULL);
+    assert(tokens->type == LITERAL);
+    assert(tokens->literal == 13);
+    assert(tokens->next == NULL);
+    assert(names == NULL);
+}
+
+void test_tokenize_string_negative_literal_token(){
+    Token tokens = NULL;
+    Name names = NULL;
+    char* foo = (char*) malloc(4);
+    foo[0] = '-';
+    foo[1] = '1';
+    foo[2] = '3';
+    foo[3] = '\0';
+    
+    tokenize_string(foo, &tokens, &names);
+    
+    assert(tokens != NULL);
+    assert(tokens->type == LITERAL);
+    assert(tokens->literal == -13);
+    assert(tokens->next == NULL);
+    assert(names == NULL);
+}
+
+void test_tokenize_string_builtin_tokens(){
+    for(int i = 0; i < NUM_BUILTINS; i++){
+        Token tokens = NULL;
+        Name names = NULL;
+        char* foo = (char*) malloc(strlen(builtin_strs[i] + 1));
+        strncpy(foo, builtin_strs[i], strlen(builtin_strs[i]));
+        foo[strlen(builtin_strs[i])] = '\0';
+        
+        tokenize_string(builtin_strs[i], &tokens, &names);
+        
+        assert(tokens != NULL);
+        assert(tokens->type == BUILTIN);
+        assert(tokens->builtin == i);
+        assert(tokens->next == NULL);
+        assert(names == NULL);
+    }
+}
+
+void test_tokenize_string_literal_token(){
+    Token tokens = NULL;
+    Name names = NULL;
+    char* foo = "hella";
+    
+    tokenize_string(foo, &tokens, &names);
+    
+    assert(tokens != NULL);
+    assert(tokens->type == NAME);
+    assert(tokens->name == INITIAL_NAME);
+    assert(tokens->next == NULL);
+    assert(names != NULL);
+    assert(strcmp(names->fullName, foo) == 0);
+    assert(names->name == INITIAL_NAME);
+    assert(names->next == NULL);
+}
+
+void test_tokenize_string_multiple_tokens(){
+    Token tokens = NULL;
+    Name names = NULL;
+    char* foo = "path hella 12";
+    
+    tokenize_string(foo, &tokens, &names);
+    
+    assert(tokens != NULL);
+    assert(tokens->type == BUILTIN);
+    assert(tokens->builtin == 5);
+    assert(tokens->next != NULL);
+    tokens = tokens->next;
+    assert(tokens->type == NAME);
+    assert(tokens->name == INITIAL_NAME);
+    assert(tokens->next != NULL);
+    tokens = tokens->next;
+    assert(tokens->type == LITERAL);
+    assert(tokens->literal == 12);
+    assert(tokens->next == NULL);
+    assert(names != NULL);
+    assert(strcmp(names->fullName, "hella") == 0);
+    assert(names->name == INITIAL_NAME);
+    assert(names->next == NULL);
+}
+
+void test_tokenize_string_empty_string(){
+    Token tokens = NULL;
+    Name names = NULL;
+    char* foo = "";
+    
+    tokenize_string(foo, &tokens, &names);
+    
+    assert(tokens == NULL);
+    assert(names == NULL);
+}
+
+void run_tokenize_string_tests(){
+    TEST_GROUP_INDICATOR("tokenize_string()")
+    test_tokenize_string_positive_literal_token();
+    test_tokenize_string_negative_literal_token();
+    test_tokenize_string_builtin_tokens();
+    test_tokenize_string_literal_token();
+    test_tokenize_string_multiple_tokens();
+    test_tokenize_string_empty_string();
+}
+
 /* END TEST DECLARATIONS */
 
 int main(int argc, char** argv){
     test_make_name();
+    test_free_name();
     run_add_name_tests();
     run_make_token_tests();
     test_free_token();
     run_get_token_end_tests();
     run_get_token_start_tests();
+    run_tokenize_string_tests();
     
     printf("All tests passed!\n");
 }
