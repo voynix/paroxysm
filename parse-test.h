@@ -5,6 +5,8 @@
 #include "parse.h"
 
 extern const short TOKEN_ARRAY_SIZE;
+extern const int NUM_BUILTINS;
+extern const PrecedenceType BAD_PRECEDENCE;
 
 void run_parser_tests();
 
