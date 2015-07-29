@@ -18,7 +18,11 @@ typedef struct TokenRec {
         NameType name;
         LiteralType literal;
     };
-    struct TokenRec* next;
+    union {
+        struct TokenRec* next;
+        struct TokenRec* right;
+    };
+    struct TokenRec* left;
 } TokenRec;
 typedef struct TokenRec* Token;
 

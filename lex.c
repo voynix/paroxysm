@@ -91,6 +91,7 @@ Token make_builtin_token(BuiltinType builtin, Token prev){
     retVal->type = BUILTIN;
     retVal->builtin = builtin;
     retVal->next = NULL;
+    retVal->left = NULL;
     if(prev != NULL)
         prev->next = retVal;
     
@@ -103,6 +104,7 @@ Token make_name_token(NameType name, Token prev){
     retVal->type = NAME;
     retVal->name = name;
     retVal->next = NULL;
+    retVal->left = NULL;
     if(prev != NULL)
         prev->next = retVal;
     return retVal;
@@ -113,6 +115,8 @@ Token make_literal_token(LiteralType literal, Token prev){
     assert(retVal != NULL);
     retVal->type = LITERAL;
     retVal->literal = literal;
+    retVal->next = NULL;
+    retVal->left = NULL;
     if(prev != NULL)
         prev->next = retVal;
     return retVal;

@@ -80,6 +80,7 @@ void test_make_builtin_token(){
     assert(testToken->type == BUILTIN);
     assert(testToken->builtin == EXPAND);
     assert(testToken->next == NULL);
+    assert(testToken->left == NULL);
 }
 
 void test_make_name_token(){
@@ -88,6 +89,7 @@ void test_make_name_token(){
     assert(testToken->type == NAME);
     assert(testToken->name == INITIAL_NAME);
     assert(testToken->next == NULL);
+    assert(testToken->left == NULL);
 }
 
 void test_make_literal_token(){
@@ -97,6 +99,7 @@ void test_make_literal_token(){
     assert(testToken->type == LITERAL);
     assert(testToken->literal == lit);
     assert(testToken->next == NULL);
+    assert(testToken->left == NULL);
 }
 
 void run_make_token_tests(){
@@ -205,6 +208,7 @@ void test_tokenize_string_positive_literal_token(){
     assert(tokens->type == LITERAL);
     assert(tokens->literal == 13);
     assert(tokens->next == NULL);
+    assert(tokens->left == NULL);
     assert(names == NULL);
 }
 
@@ -223,6 +227,7 @@ void test_tokenize_string_negative_literal_token(){
     assert(tokens->type == LITERAL);
     assert(tokens->literal == -13);
     assert(tokens->next == NULL);
+    assert(tokens->left == NULL);
     assert(names == NULL);
 }
 
@@ -240,6 +245,7 @@ void test_tokenize_string_builtin_tokens(){
         assert(tokens->type == BUILTIN);
         assert(tokens->builtin == i);
         assert(tokens->next == NULL);
+        assert(tokens->left == NULL);
         assert(names == NULL);
     }
 }
@@ -255,6 +261,7 @@ void test_tokenize_string_name_token(){
     assert(tokens->type == NAME);
     assert(tokens->name == INITIAL_NAME);
     assert(tokens->next == NULL);
+    assert(tokens->left == NULL);
     assert(names != NULL);
     assert(strcmp(names->fullName, foo) == 0);
     assert(names->name == INITIAL_NAME);
@@ -272,14 +279,17 @@ void test_tokenize_string_multiple_tokens(){
     assert(tokens->type == BUILTIN);
     assert(tokens->builtin == 5);
     assert(tokens->next != NULL);
+    assert(tokens->left == NULL);
     tokens = tokens->next;
     assert(tokens->type == NAME);
     assert(tokens->name == INITIAL_NAME);
     assert(tokens->next != NULL);
+    assert(tokens->left == NULL);
     tokens = tokens->next;
     assert(tokens->type == LITERAL);
     assert(tokens->literal == 12);
     assert(tokens->next == NULL);
+    assert(tokens->left == NULL);
     assert(names != NULL);
     assert(strcmp(names->fullName, "hella") == 0);
     assert(names->name == INITIAL_NAME);
