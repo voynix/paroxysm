@@ -200,8 +200,10 @@ void tokenize_string(char* input, Token* tokens, Name* names){
         Token newToken = NULL;
         // first check is to disambugate negative numbers from MINUS
         if((tok_str[0] == '-' && strlen(tok_str) > 1) || (tok_str[0] >= '0' && tok_str[0] <= '9')){ // literal
+            for(char* c = tok_str + 1; *c != '\0'; c++)
+                if(*c <= '0' || *c >= '9')
+                    assert(0); // TODO: actual error handling
             newToken = make_literal_token(atoi(tok_str), lastToken);
-            // TODO: check return value on atoi here first and error if they fucked it up...
         } else {
             for(int i = 0; i < NUM_BUILTINS; i++){ // builtin
                 if(strcmp(builtin_strs[i], tok_str) == 0){
@@ -210,9 +212,13 @@ void tokenize_string(char* input, Token* tokens, Name* names){
                 }
             }
         }
-        if(newToken == NULL) // wasn't literal or builtin, so must be name
-            // TODO: check for only valid characters in tok_str A-Za-z0-9_
+        if(newToken == NULL){ // wasn't literal or builtin, so must be name
+            // legal characters are A-Za-z0-9_
+            for(char* c = tok_str; *c != '\0'; c++)
+                if(!((*c == '_') || (*c >= '0' && *c <= '9') || (*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z')))
+                    assert(0); // TODO: actual error handling
             newToken = make_name_token(add_name(names, tok_str), lastToken);
+        }
         
         if(*tokens == NULL)
             *tokens = newToken;

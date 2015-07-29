@@ -244,7 +244,7 @@ void test_tokenize_string_builtin_tokens(){
     }
 }
 
-void test_tokenize_string_literal_token(){
+void test_tokenize_string_name_token(){
     Token tokens = NULL;
     Name names = NULL;
     char* foo = "hella";
@@ -302,7 +302,7 @@ void run_tokenize_string_tests(){
     test_tokenize_string_positive_literal_token();
     test_tokenize_string_negative_literal_token();
     test_tokenize_string_builtin_tokens();
-    test_tokenize_string_literal_token();
+    test_tokenize_string_name_token();
     test_tokenize_string_multiple_tokens();
     test_tokenize_string_empty_string();
 }
