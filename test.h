@@ -3,5 +3,6 @@
 
 #include <stdio.h>
 #include "lex-test.h"
+#include "parse-test.h"
 
 #endif

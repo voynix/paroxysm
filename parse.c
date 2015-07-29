@@ -1,5 +1,8 @@
 #include "parse.h"
 
+// the max number of tokens we can process per line
+const short TOKEN_ARRAY_SIZE = 200;
+
 void push_token_array(Token t, Token (*array)[TOKEN_ARRAY_SIZE], unsigned* arrayLength){
     if(*arrayLength >= TOKEN_ARRAY_SIZE){
         assert(0); // TODO: actual error handling
@@ -8,8 +11,8 @@ void push_token_array(Token t, Token (*array)[TOKEN_ARRAY_SIZE], unsigned* array
     (*arrayLength)++;
 }
 
-Token pop_token_array(Token* array[TOKEN_ARRAY_SIZE], unsigned* arrayLength){
-    if(arrayLength == 0)
+Token pop_token_array(Token (*array)[TOKEN_ARRAY_SIZE], unsigned* arrayLength){
+    if(*arrayLength == 0)
         return NULL;
     (*arrayLength)--;
     return (*array)[*arrayLength];
