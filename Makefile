@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall -g
+CFLAGS = -Wall -std=c11 -g
 SRCS = lex.c parse.c
 TEST_SRCS = test.c lex-test.c parse-test.c
 OBJS = ${SRCS:.c=.o}
