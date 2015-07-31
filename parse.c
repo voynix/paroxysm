@@ -1,8 +1,8 @@
 #include "parse.h"
 
-// the max number of tokens we can process per line
 const short TOKEN_ARRAY_SIZE = 200;
-const PrecedenceType BAD_PRECEDENCE = 20;
+const PrecedenceType DEFAULT_PRECEDENCE = 20;
+const ArityType DEFAULT_ARITY = 20;
 
 /*
  * Push a token onto a stack
@@ -59,15 +59,73 @@ PrecedenceType get_precedence(BuiltinType b){
             return 5;
         case L_PAREN:
         case R_PAREN:
-            return BAD_PRECEDENCE;
+            return 6;
+    }
+    return DEFAULT_PRECEDENCE;
+}
+
+/*
+ * Returns arity for each operator
+ */
+ArityType get_arity(BuiltinType b){
+    switch(b){
+        case EXPAND:
+        case COLLAPSE:
+        case L_PAREN:
+        case R_PAREN:
+            return 0;
+        case INIT:
+        case TERM:
+        case PATH:
+        case OUTN:
+        case OUTC:
+        case NEG:
+            return 1;
+        case SET:
+        case AND:
+        case OR:
+        case LESS_THAN:
+        case GREATER_THAN:
+        case L_SHIFT:
+        case R_SHIFT:
+        case PLUS:
+        case MINUS:
+        case BIT_AND:
+        case BIT_OR:
+        case MULTIPLY:
+        case DIVIDE:
+            return 2;
+        case BIFURC:
+            return 3;
+    }
+    return DEFAULT_ARITY;
+}
+
+/*
+ * Returns whether or not the given builtin can start a line
+ */
+int can_start_line(BuiltinType b){
+    switch(b){
+        case EXPAND:
+        case COLLAPSE:
+        case INIT:
+        case TERM:
+        case SET:
+        case PATH:
+        case BIFURC:
+        case OUTN:
+        case OUTC:
+            return 1;
+        default:
+            return 0;
     }
 }
 
 /*
- * Turns a token stream into an AST
- * Returns the AST in the argument tokens
+ * Parse and infix expression from a token stream
+ * Returns a parse tree
  */
-void create_AST(Token* tokens){
+Token parse_infix_expression(Token tokens){
     // see http://stackoverflow.com/questions/1810083/c-pointers-pointing-to-an-array-of-fixed-size
     // for explanation of this type signature
     Token (*operators)[TOKEN_ARRAY_SIZE] = malloc(sizeof(operators));
@@ -77,8 +135,6 @@ void create_AST(Token* tokens){
     Token (*output)[TOKEN_ARRAY_SIZE] = malloc(sizeof(output));
     assert(output != NULL);
     unsigned outputLen = 0;
-    
-    Token nextToken = NULL;
     
     while(*tokens != NULL){
         nextToken = (*tokens)->next;
@@ -91,6 +147,29 @@ void create_AST(Token* tokens){
         // if it's a builtin, do magic
         *tokens = nextToken;
     }
+}
+
+/*
+ * Turns a token stream into an AST
+ * Returns the AST in the argument tokens
+ */
+void create_AST(Token* tokens){
+    if(*tokens->type != BUILTIN){
+        assert(0); // TODO: proper error handling
+        // this should be a syntax error of some sort, probably
+    }
+    if(!can_start_line(*tokens->builtin)){
+        assert(0); // TODO: proper error handling
+        // this should also be a syntax error
+    }
+    Token output = *tokens; // we'll hook up the operands later, once we have them
     
-    tokens = output[0];
+    // call to parse_infix_expression here as needed, based on arity, etc
+    // possibly after grabbing non-expr operands, of course
+    
+    tokens = output;
+    
+    //let's not leak memory
+    free(output);
+    free(operators);
 }

@@ -47,10 +47,23 @@ void run_token_array_tests(){
 void test_get_precedence(){ // make sure we have values for all builtins
     TEST_GROUP_INDICATOR("get_precedence()")
     for(int i = 0; i < NUM_BUILTINS; i++)
-        if(i != L_PAREN && i != R_PAREN)
-            assert(get_precedence(i) != BAD_PRECEDENCE);
-    assert(get_precedence(L_PAREN) == BAD_PRECEDENCE);
-    assert(get_precedence(R_PAREN) == BAD_PRECEDENCE);
+        assert(get_precedence(i) != DEFAULT_PRECEDENCE);
+}
+
+/* get_arity */
+
+void test_get_arity(){ // make sure we have values for all builtins
+    TEST_GROUP_INDICATOR("get_arity()");
+    for(int i = 0; i < NUM_BUILTINS; i++)
+        assert(get_arity(i) != DEFAULT_ARITY);
+}
+
+/* can_start_line */
+
+void test_can_start_line(){ // this is mostly pointless, but *shrug*
+    TEST_GROUP_INDICATOR("can_start_line()");
+    for(int i = 0; i < NUM_BUILTINS; i++)
+        assert(can_start_line(i) == 1 || can_start_line(i) == 0);
 }
 
 /* END TEST DECLARATIONS */
@@ -60,6 +73,8 @@ void run_parser_tests(){
     
     run_token_array_tests();
     test_get_precedence();
+    test_get_arity();
+    test_can_start_line();
     
     TEST_FILE_END_INDICATOR("parser")
 }

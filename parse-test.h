@@ -6,7 +6,8 @@
 
 extern const short TOKEN_ARRAY_SIZE;
 extern const int NUM_BUILTINS;
-extern const PrecedenceType BAD_PRECEDENCE;
+extern const PrecedenceType DEFAULT_PRECEDENCE;
+extern const ArityType DEFAULT_ARITY;
 
 void run_parser_tests();
 
