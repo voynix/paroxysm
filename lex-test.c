@@ -140,6 +140,11 @@ void test_get_token_end_last_token(){
     assert(get_token_end(foo, 10) == 15);
 }
 
+void test_get_token_end_last_token_before_comment(){
+    char* foo = "outn -12  hella; dogs"; // this hardcodes COMMENT_CHAR :(
+    assert(get_token_end(foo, 10) == 15);
+}
+
 void test_get_token_end_single_token(){
     char* foo = "expand";
     assert(get_token_end(foo, 0) == 6);
@@ -155,6 +160,7 @@ void run_get_token_end_tests(){
     test_get_token_end_first_token();
     test_get_token_end_middle_token();
     test_get_token_end_last_token();
+    test_get_token_end_last_token_before_comment();
     test_get_token_end_single_token();
     test_get_token_end_bad_pos();
 }
@@ -176,6 +182,11 @@ void test_get_token_start_last_token(){
     assert(get_token_start(foo, 15) == EOL);
 }
 
+void test_get_token_start_last_token_before_comment(){
+    char* foo = "outn -12  hella; ducks"; // this hardcodes COMMENT_CHAR :(
+    assert(get_token_start(foo, 15) == EOL);
+}
+
 void test_get_token_start_single_token(){ // this is redundant with ...first_token, but eh
     char* foo = "expand";
     assert(get_token_start(foo, 0) == 0);
@@ -191,6 +202,7 @@ void run_get_token_start_tests(){
     test_get_token_start_first_token();
     test_get_token_start_middle_token();
     test_get_token_start_last_token();
+    test_get_token_start_last_token_before_comment();
     test_get_token_start_single_token();
     test_get_token_start_bad_pos();
 }
@@ -317,6 +329,17 @@ void test_tokenize_string_empty_string(){
     assert(names == NULL);
 }
 
+void test_tokenize_string_comment_string(){
+    Token tokens = NULL;
+    Name names = NULL;
+    char* foo = ";"; // this hardcodes COMMENT_CHAR :(
+    
+    tokenize_string(foo, &tokens, &names);
+    
+    assert(tokens == NULL);
+    assert(names == NULL);
+}
+
 void run_tokenize_string_tests(){
     TEST_GROUP_INDICATOR("tokenize_string()")
     test_tokenize_string_positive_literal_token();
@@ -325,6 +348,7 @@ void run_tokenize_string_tests(){
     test_tokenize_string_name_token();
     test_tokenize_string_multiple_tokens();
     test_tokenize_string_empty_string();
+    test_tokenize_string_comment_string();
 }
 
 /* END TEST DECLARATIONS */
