@@ -84,6 +84,7 @@ NameType add_name(Name* nameList, char* fullName){
 
 /*
  * Make a token of the appropriate type with the given value
+ * Hooks up prev to it if given
  */
 Token make_builtin_token(BuiltinType builtin, Token prev){
     Token retVal = (Token) malloc(sizeof(TokenRec));
@@ -92,6 +93,7 @@ Token make_builtin_token(BuiltinType builtin, Token prev){
     retVal->builtin = builtin;
     retVal->next = NULL;
     retVal->left = NULL;
+    retVal->right = NULL;
     if(prev != NULL)
         prev->next = retVal;
     
@@ -105,6 +107,7 @@ Token make_name_token(NameType name, Token prev){
     retVal->name = name;
     retVal->next = NULL;
     retVal->left = NULL;
+    retVal->right = NULL;
     if(prev != NULL)
         prev->next = retVal;
     return retVal;
@@ -117,6 +120,7 @@ Token make_literal_token(LiteralType literal, Token prev){
     retVal->literal = literal;
     retVal->next = NULL;
     retVal->left = NULL;
+    retVal->right = NULL;
     if(prev != NULL)
         prev->next = retVal;
     return retVal;

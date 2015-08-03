@@ -11,6 +11,8 @@ typedef unsigned short ArityType;
 // the max number of tokens we can process per line
 const short TOKEN_ARRAY_SIZE;
 
+int get_token_length(Token t);
+
 void push_token_array(Token t, Token (*array)[TOKEN_ARRAY_SIZE], unsigned* arrayLength);
 Token pop_token_array(Token (*array)[TOKEN_ARRAY_SIZE], unsigned* arrayLength);
 

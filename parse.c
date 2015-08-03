@@ -5,6 +5,18 @@ const PrecedenceType DEFAULT_PRECEDENCE = 20;
 const ArityType DEFAULT_ARITY = 20;
 
 /*
+ * Returns the length of token stream t
+ */
+int get_token_length(Token t){
+    int length = 0;
+    while(t != NULL){
+        t = t->next;
+        length++;
+    }
+    return length;
+}
+
+/*
  * Push a token onto a stack
  */
 void push_token_array(Token t, Token (*array)[TOKEN_ARRAY_SIZE], unsigned* arrayLength){
@@ -136,17 +148,29 @@ Token parse_infix_expression(Token tokens){
     assert(output != NULL);
     unsigned outputLen = 0;
     
-    while(*tokens != NULL){
-        nextToken = (*tokens)->next;
+    Token nextToken;
+    
+    while(tokens != NULL){
+        nextToken = tokens->next;
         // if it's not a builtin, stick it in output
-        if((*tokens)->type != BUILTIN){
-            push_token_array(*tokens, output, &outputLen);
+        if(tokens->type != BUILTIN){
+            push_token_array(tokens, output, &outputLen);
         } else {
             
         }
         // if it's a builtin, do magic
-        *tokens = nextToken;
+        tokens = nextToken;
     }
+    
+    Token retval = *output[0];
+    // actually have logic here to build a chain of tokens
+    // if there are multiple tokens in output
+    
+    //let's not leak memory
+    free(output);
+    free(operators);
+    
+    return retval;
 }
 
 /*
@@ -154,22 +178,86 @@ Token parse_infix_expression(Token tokens){
  * Returns the AST in the argument tokens
  */
 void create_AST(Token* tokens){
-    if(*tokens->type != BUILTIN){
+    if((*tokens)->type != BUILTIN){
         assert(0); // TODO: proper error handling
         // this should be a syntax error of some sort, probably
     }
-    if(!can_start_line(*tokens->builtin)){
+    if(!can_start_line((*tokens)->builtin)){
         assert(0); // TODO: proper error handling
         // this should also be a syntax error
     }
-    Token output = *tokens; // we'll hook up the operands later, once we have them
+    if(*tokens == NULL)
+        return;
+    
+    // now we're assured of having a builtin, so let's grab it
+    Token output = *tokens;
+    *tokens = (*tokens)->next;
+    
+    
+    // now let's grab the operands for our builtin
+    
+    // sanity checking
+    if(get_arity(output->builtin) == 0 && *tokens != NULL){
+        assert(0); // TODO: proper error handling
+        // eg don't follow EXPAND with a value, etc
+    } else if(get_arity(output->builtin) > get_token_length(*tokens)){
+        assert(0); // TODO: proper error handling
+        // first check for insufficient operands
+    }
+    
+    // we only need to handle builtins with arity > 0 here
+    // first operand goes in left
+    // second operand goes in right
+    // if three operands (ie bifurc)
+    // make a dummy token as right
+    // then second as its left and third as its right
+    switch(output->builtin){
+        // one name
+        case INIT:
+        case TERM:
+        case PATH:
+            if((*tokens)->type != NAME){
+                assert(0); // TODO: proper error handling
+            }
+            output->left = *tokens;
+            break;
+        // one expression
+        case OUTN:
+        case OUTC:
+            output->left = parse_infix_expression(*tokens);
+            if(get_token_length(output->left) > 1){ // ie malformed expression
+                assert(0); // TODO: proper error handling
+            }
+            break;
+        // one name followed by one expression
+        case SET:
+            if((*tokens)->type != NAME){
+                assert(0); // TODO: proper error handling
+            }
+            output->left = *tokens;
+            output->right = parse_infix_expression((*tokens)->next);
+            if(get_token_length(output->right) > 1){ // ie malformed expression
+                assert(0); // TODO: proper error handling
+            }
+            break;
+        // one expression followed by two names
+        case BIFURC:
+            output->left = parse_infix_expression(*tokens);
+            if(get_token_length(output->left) != 3){ // ie malformed
+                assert(0); // TODO: proper error handling
+            } else if(output->left->next->type != NAME || output->left->next->next->type != NAME){
+                assert(0); // TODO: proper error handling
+            }
+            output->right = make_builtin_token(BIFURC, NULL);
+            output->right->left = output->left->next;
+            output->right->right = output->left->next->next;
+            break;
+        default: // do nothing for builtins with arity 0
+            break;
+    }
     
     // call to parse_infix_expression here as needed, based on arity, etc
     // possibly after grabbing non-expr operands, of course
     
-    tokens = output;
-    
-    //let's not leak memory
-    free(output);
-    free(operators);
+    *tokens = output;
 }

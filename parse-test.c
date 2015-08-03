@@ -1,5 +1,32 @@
 #include "parse-test.h"
 
+/* get_token_length */
+
+void test_get_token_length_one_token(){
+    Token t = make_builtin_token(COLLAPSE, NULL);
+    
+    assert(get_token_length(t) == 1);
+}
+
+void test_get_token_length_many_tokens(){
+    Token t = make_builtin_token(L_PAREN, NULL);
+    Token x = make_builtin_token(EXPAND, t);
+    make_builtin_token(R_PAREN, x);
+    
+    assert(get_token_length(t) == 3);
+}
+
+void test_get_token_length_no_tokens(){
+    assert(get_token_length(NULL) == 0);
+}
+
+void run_get_token_length_tests(){
+    TEST_GROUP_INDICATOR("get_token_length()")
+    test_get_token_length_one_token();
+    test_get_token_length_many_tokens();
+    test_get_token_length_no_tokens();
+}
+
 /* {push, pop}_token_array() */
 
 void test_push_token_array(){
@@ -71,6 +98,7 @@ void test_can_start_line(){ // this is mostly pointless, but *shrug*
 void run_parser_tests(){
     TEST_FILE_START_INDICATOR("parser")
     
+    run_get_token_length_tests();
     run_token_array_tests();
     test_get_precedence();
     test_get_arity();
