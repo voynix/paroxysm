@@ -27,46 +27,46 @@ void run_get_token_length_tests(){
     test_get_token_length_no_tokens();
 }
 
-/* {push, pop}_token_array() */
+/* {push, pop}_token_stack() */
 
-void test_push_token_array(){
-    Token (*test)[TOKEN_ARRAY_SIZE] = malloc(sizeof(test));
+void test_push_token_stack(){
+    Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
     
-    push_token_array(t, test, &len);
+    push_token_stack(t, test, &len);
     
     assert(len == 1);
     assert((*test)[0] == t);
 }
 
-void test_pop_token_array_non_empty(){
-    Token (*test)[TOKEN_ARRAY_SIZE] = malloc(sizeof(test));
+void test_pop_token_stack_non_empty(){
+    Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
-    push_token_array(t, test, &len);
+    push_token_stack(t, test, &len);
     
-    Token x = pop_token_array(test, &len);
+    Token x = pop_token_stack(test, &len);
     
     assert(len == 0);
     assert(x == t);
 }
 
-void test_pop_token_array_empty(){
-    Token (*test)[TOKEN_ARRAY_SIZE] = malloc(sizeof(test));
+void test_pop_token_stack_empty(){
+    Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
     unsigned len = 0;
     
-    Token x = pop_token_array(test, &len);
+    Token x = pop_token_stack(test, &len);
     
     assert(len == 0);
     assert(x == NULL);
 }
 
-void run_token_array_tests(){
-    TEST_GROUP_INDICATOR("..._token_array()")
-    test_push_token_array();
-    test_pop_token_array_non_empty();
-    test_pop_token_array_empty();
+void run_token_stack_tests(){
+    TEST_GROUP_INDICATOR("..._token_stack()")
+    test_push_token_stack();
+    test_pop_token_stack_non_empty();
+    test_pop_token_stack_empty();
 }
 
 /* get_precedence */
@@ -99,7 +99,7 @@ void run_parser_tests(){
     TEST_FILE_START_INDICATOR("parser")
     
     run_get_token_length_tests();
-    run_token_array_tests();
+    run_token_stack_tests();
     test_get_precedence();
     test_get_arity();
     test_can_start_line();

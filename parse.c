@@ -1,6 +1,6 @@
 #include "parse.h"
 
-const short TOKEN_ARRAY_SIZE = 200;
+const short TOKEN_STACK_SIZE = 200;
 const PrecedenceType DEFAULT_PRECEDENCE = 20;
 const ArityType DEFAULT_ARITY = 20;
 
@@ -19,20 +19,20 @@ int get_token_length(Token t){
 /*
  * Push a token onto a stack
  */
-void push_token_array(Token t, Token (*array)[TOKEN_ARRAY_SIZE], unsigned* arrayLength){
-    assert(*arrayLength < TOKEN_ARRAY_SIZE);
-    (*array)[*arrayLength] = t;
-    (*arrayLength)++;
+void push_token_stack(Token t, Token (*stack)[TOKEN_STACK_SIZE], unsigned* stackLength){
+    assert(*stackLength < TOKEN_STACK_SIZE);
+    (*stack)[*stackLength] = t;
+    (*stackLength)++;
 }
 
 /*
  * Pop a token off a stack
  */
-Token pop_token_array(Token (*array)[TOKEN_ARRAY_SIZE], unsigned* arrayLength){
-    if(*arrayLength == 0)
+Token pop_token_stack(Token (*stack)[TOKEN_STACK_SIZE], unsigned* stackLength){
+    if(*stackLength == 0)
         return NULL;
-    (*arrayLength)--;
-    return (*array)[*arrayLength];
+    (*stackLength)--;
+    return (*stack)[*stackLength];
 }
 
 /*
@@ -140,11 +140,11 @@ int can_start_line(BuiltinType b){
 Token parse_infix_expression(Token tokens){
     // see http://stackoverflow.com/questions/1810083/c-pointers-pointing-to-an-array-of-fixed-size
     // for explanation of this type signature
-    Token (*operators)[TOKEN_ARRAY_SIZE] = malloc(sizeof(operators));
+    Token (*operators)[TOKEN_STACK_SIZE] = malloc(sizeof(operators));
     assert(operators != NULL);
     unsigned operatorsLen = 0;
     
-    Token (*output)[TOKEN_ARRAY_SIZE] = malloc(sizeof(output));
+    Token (*output)[TOKEN_STACK_SIZE] = malloc(sizeof(output));
     assert(output != NULL);
     unsigned outputLen = 0;
     
@@ -154,7 +154,7 @@ Token parse_infix_expression(Token tokens){
         nextToken = tokens->next;
         // if it's not a builtin, stick it in output
         if(tokens->type != BUILTIN){
-            push_token_array(tokens, output, &outputLen);
+            push_token_stack(tokens, output, &outputLen);
         } else {
             
         }
