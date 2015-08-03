@@ -168,9 +168,13 @@ Token parse_infix_expression(Token tokens){
         tokens = tokens->next;
     }
     
-    Token retval = *output[0];
-    // actually have logic here to build a chain of tokens
-    // if there are multiple tokens in output
+    Token retval = pop_token_stack(output, &outputLen);
+    // if there are multiple tokens in output, create a chain
+    Token last = retval;
+    while(outputLen > 0){
+        last->next = pop_token_stack(output, &outputLen);
+        last = last->next;
+    }
     
     //let's not leak memory
     free(output);
@@ -198,7 +202,6 @@ void create_AST(Token* tokens){
     // now we're assured of having a builtin, so let's grab it
     Token output = *tokens;
     *tokens = (*tokens)->next;
-    
     
     // now let's grab the operands for our builtin
     
