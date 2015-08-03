@@ -148,18 +148,24 @@ Token parse_infix_expression(Token tokens){
     assert(output != NULL);
     unsigned outputLen = 0;
     
-    Token nextToken;
-    
     while(tokens != NULL){
-        nextToken = tokens->next;
         // if it's not a builtin, stick it in output
         if(tokens->type != BUILTIN){
             push_token_stack(tokens, output, &outputLen);
-        } else {
-            
+        } else { // if it's a builtin, do magic
+            // check if it's allowed to be here
+            if(can_start_line(tokens->builtin)){
+                assert(0); // TODO: proper error handling
+            }
+            // TODO: check if this logic is right!!
+            // if we have higher or equal precedence, we go on top of the stack
+            if(get_precedence(tokens->builtin) >= get_precedence((*operators)[0]->builtin)){
+                push_token_stack(tokens, operators, &operatorsLen);
+            } else { // otherwise other stuff happens
+                // TODO: magic happens here
+            }
         }
-        // if it's a builtin, do magic
-        tokens = nextToken;
+        tokens = tokens->next;
     }
     
     Token retval = *output[0];
