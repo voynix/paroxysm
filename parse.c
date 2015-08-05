@@ -134,8 +134,31 @@ int can_start_line(BuiltinType b){
 }
 
 /*
+ * Takes the top operator off of operators, grabs operands from output
+ * and puts the new tree on output
+ */
+void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, Token (*output)[TOKEN_STACK_SIZE], unsigned* outputLen){
+    Token op = pop_token_stack(operators, operatorsLen);
+    if(op->builtin == NEG){
+        if(*outputLen < 1){
+            assert(0); // TODO: proper error handling
+        }
+        op->left = pop_token_stack(output, outputLen);
+    } else{
+        if(*outputLen < 2){ // all the other infix ops are binary
+            assert(0); // TODO: proper error handling
+        }
+        // stack, so fill in operands in reverse order
+        op->right = pop_token_stack(output, outputLen);
+        op->left = pop_token_stack(output, outputLen);
+    }
+    push_token_stack(op, output, outputLen);
+}
+
+/*
  * Parse and infix expression from a token stream
  * Returns a parse tree
+ * See https://en.wikipedia.org/wiki/Shunting-yard_algorithm
  */
 Token parse_infix_expression(Token tokens){
     // see http://stackoverflow.com/questions/1810083/c-pointers-pointing-to-an-array-of-fixed-size
@@ -148,7 +171,9 @@ Token parse_infix_expression(Token tokens){
     assert(output != NULL);
     unsigned outputLen = 0;
     
+    Token nextToken;
     while(tokens != NULL){
+        nextToken = tokens->next;
         // if it's not a builtin, stick it in output
         if(tokens->type != BUILTIN){
             push_token_stack(tokens, output, &outputLen);
@@ -157,24 +182,41 @@ Token parse_infix_expression(Token tokens){
             if(can_start_line(tokens->builtin)){
                 assert(0); // TODO: proper error handling
             }
-            // TODO: check if this logic is right!!
-            // if we have higher or equal precedence, we go on top of the stack
-            if(get_precedence(tokens->builtin) >= get_precedence((*operators)[0]->builtin)){
+            if(operatorsLen == 0){
                 push_token_stack(tokens, operators, &operatorsLen);
-            } else { // otherwise other stuff happens
-                // TODO: magic happens here
+            } else if(tokens->builtin == L_PAREN){
+                push_token_stack(tokens, operators, &operatorsLen);
+            } else if(tokens->builtin == R_PAREN){
+                // pop operators until L_PAREN
+                free_token(&tokens); // we don't need the R_PAREN
+                while((*operators)[operatorsLen - 1]->builtin != L_PAREN && operatorsLen > 0)
+                    pop_operator(operators, &operatorsLen, output, &outputLen);
+                if(operatorsLen == 0){ // there was no L_PAREN, so error
+                    assert(0); // TODO: proper error handling
+                } else {
+                    // discard the L_PAREN
+                    Token discard = pop_token_stack(operators, &operatorsLen);
+                    free_token(&discard);
+                }
+            } else if(get_precedence(tokens->builtin) > get_precedence((*operators)[0]->builtin)){
+                push_token_stack(tokens, operators, &operatorsLen);
+            } else {
+                // we are not a parenthesis and we're lower precedence than
+                // the operator on the stack, so pop it and put us there
+                pop_operator(operators, &operatorsLen, output, &outputLen);
+                push_token_stack(tokens, operators, &operatorsLen);
             }
         }
-        tokens = tokens->next;
+        tokens = nextToken;
     }
     
+    // pop all remaining operators
+    while(operatorsLen > 0)
+        pop_operator(operators, &operatorsLen, output, &outputLen);
+    
     Token retval = pop_token_stack(output, &outputLen);
-    // if there are multiple tokens in output, create a chain
-    Token last = retval;
-    while(outputLen > 0){
-        last->next = pop_token_stack(output, &outputLen);
-        last = last->next;
-    }
+    
+    // TODO: cleanup, possibly??
     
     //let's not leak memory
     free(output);
@@ -251,15 +293,22 @@ void create_AST(Token* tokens){
             break;
         // one expression followed by two names
         case BIFURC:
-            output->left = parse_infix_expression(*tokens);
-            if(get_token_length(output->left) != 3){ // ie malformed
-                assert(0); // TODO: proper error handling
-            } else if(output->left->next->type != NAME || output->left->next->next->type != NAME){
+            // dummy token to hold the two paths
+            output->right = make_builtin_token(BIFURC, NULL);
+            // grab the two paths
+            Token newEnd = *tokens;
+            for(int i = 0; i < get_token_length(*tokens) - 3; i++)
+                newEnd = newEnd->next;
+            output->right->left = newEnd->next;
+            output->right->right = newEnd->next->next;
+            // we need to get names
+            if(output->right->left->type != NAME || output->right->right->type != NAME){
                 assert(0); // TODO: proper error handling
             }
-            output->right = make_builtin_token(BIFURC, NULL);
-            output->right->left = output->left->next;
-            output->right->right = output->left->next->next;
+            // chop the two paths we grabbed off the token stream
+            newEnd->next = NULL;
+            // grab the expression at last
+            output->left = parse_infix_expression(*tokens);
             break;
         default: // do nothing for builtins with arity 0
             break;

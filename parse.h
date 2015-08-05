@@ -20,6 +20,7 @@ PrecedenceType get_precedence(BuiltinType b);
 ArityType get_arity(BuiltinType b);
 int can_start_line(BuiltinType b);
 
+void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, Token (*output)[TOKEN_STACK_SIZE], unsigned* outputLen);
 Token parse_infix_expression(Token tokens);
 void create_AST(Token* tokens);
 
