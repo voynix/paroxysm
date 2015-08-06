@@ -236,6 +236,8 @@ Token parse_infix_expression(Token tokens){
  * Returns the AST
  */
 Token create_AST(Token tokens){
+    if(tokens == NULL)
+        return NULL;
     if(tokens->type != BUILTIN){
         assert(0); // TODO: proper error handling
         // this should be a syntax error of some sort, probably
@@ -244,8 +246,6 @@ Token create_AST(Token tokens){
         assert(0); // TODO: proper error handling
         // this should also be a syntax error
     }
-    if(tokens == NULL)
-        return NULL;
     
     // now we're assured of having a builtin, so let's grab it
     Token output = tokens;
@@ -282,9 +282,6 @@ Token create_AST(Token tokens){
         case OUTN:
         case OUTC:
             output->left = parse_infix_expression(tokens);
-            if(get_token_length(output->left) > 1){ // ie malformed expression
-                assert(0); // TODO: proper error handling
-            }
             break;
         // one name followed by one expression
         case SET:

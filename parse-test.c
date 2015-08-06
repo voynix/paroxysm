@@ -305,6 +305,193 @@ void run_parse_infix_expression_tests(){
     test_parse_infix_expression_null_expression();
 }
 
+/* create_AST */
+
+void test_create_AST_INIT(){
+    Token t = make_builtin_token(INIT, NULL);
+    make_name_token(INITIAL_NAME, t);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == INIT);
+    assert(t->left != NULL);
+    assert(t->right == NULL);
+    assert(t->left->type == NAME);
+    assert(t->left->name == INITIAL_NAME);
+    assert(t->left->left == NULL);
+    assert(t->left->right == NULL);
+}
+
+void test_create_AST_TERM(){
+    Token t = make_builtin_token(TERM, NULL);
+    make_name_token(INITIAL_NAME, t);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == TERM);
+    assert(t->left != NULL);
+    assert(t->right == NULL);
+    assert(t->left->type == NAME);
+    assert(t->left->name == INITIAL_NAME);
+    assert(t->left->left == NULL);
+    assert(t->left->right == NULL);
+}
+
+void test_create_AST_PATH(){
+    Token t = make_builtin_token(PATH, NULL);
+    make_name_token(INITIAL_NAME, t);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == PATH);
+    assert(t->left != NULL);
+    assert(t->right == NULL);
+    assert(t->left->type == NAME);
+    assert(t->left->name == INITIAL_NAME);
+    assert(t->left->left == NULL);
+    assert(t->left->right == NULL);
+}
+
+void test_create_AST_OUTN(){
+    Token t = make_builtin_token(OUTN, NULL);
+    make_literal_token(400, t);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == OUTN);
+    assert(t->left != NULL);
+    assert(t->right == NULL);
+    assert(t->left->type == LITERAL);
+    assert(t->left->name == 400);
+    assert(t->left->left == NULL);
+    assert(t->left->right == NULL);
+}
+
+void test_create_AST_OUTC(){
+    Token t = make_builtin_token(OUTC, NULL);
+    Token s = make_builtin_token(NEG, t);
+    make_literal_token(400, s);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == OUTC);
+    assert(t->left != NULL);
+    assert(t->right == NULL);
+    assert(t->left->type == BUILTIN);
+    assert(t->left->builtin == NEG);
+    assert(t->left->left != NULL);
+    assert(t->left->right == NULL);
+    assert(t->left->left->type == LITERAL);
+    assert(t->left->left->name == 400);
+    assert(t->left->left->left == NULL);
+    assert(t->left->left->right == NULL);
+}
+
+void test_create_AST_SET(){
+    Token t = make_builtin_token(SET, NULL);
+    Token s = make_name_token(INITIAL_NAME, t);
+    s = make_literal_token(10, s);
+    s = make_builtin_token(OR, s);
+    s = make_name_token(INITIAL_NAME + 1, s);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == SET);
+    assert(t->left != NULL);
+    assert(t->right != NULL);
+    assert(t->left->type == NAME);
+    assert(t->left->builtin == INITIAL_NAME);
+    assert(t->left->left == NULL);
+    assert(t->left->right == NULL);
+    assert(t->right->type == BUILTIN);
+    assert(t->right->builtin == OR);
+    assert(t->right->left != NULL);
+    assert(t->right->right != NULL);
+    assert(t->right->left->type == LITERAL);
+    assert(t->right->left->literal == 10);
+    assert(t->right->left->left == NULL);
+    assert(t->right->left->right == NULL);
+    assert(t->right->right->type == NAME);
+    assert(t->right->right->name == INITIAL_NAME + 1);
+    assert(t->right->right->left == NULL);
+    assert(t->right->right->right == NULL);
+}
+
+void test_create_AST_BIFURC(){
+    Token t = make_builtin_token(BIFURC, NULL);
+    Token s = make_builtin_token(NEG, t);
+    s = make_builtin_token(L_PAREN, s);
+    s = make_builtin_token(L_PAREN, s);
+    s = make_builtin_token(NEG, s);
+    s = make_literal_token(14, s);
+    s = make_builtin_token(R_PAREN, s);
+    s = make_builtin_token(R_PAREN, s);
+    s = make_name_token(INITIAL_NAME, s);
+    s = make_name_token(INITIAL_NAME + 1, s);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == BIFURC);
+    assert(t->left != NULL);
+    assert(t->right != NULL);
+    assert(t->left->type == BUILTIN);
+    assert(t->left->builtin == NEG);
+    assert(t->left->left != NULL);
+    assert(t->left->right == NULL);
+    assert(t->left->left->type == BUILTIN);
+    assert(t->left->left->builtin == NEG);
+    assert(t->left->left->left != NULL);
+    assert(t->left->left->right == NULL);
+    assert(t->left->left->left->type == LITERAL);
+    assert(t->left->left->left->literal == 14);
+    assert(t->left->left->left->left == NULL);
+    assert(t->left->left->left->right == NULL);
+    assert(t->right->type == BUILTIN);
+    assert(t->right->builtin == BIFURC);
+    assert(t->right->left != NULL);
+    assert(t->right->right != NULL);
+    assert(t->right->left->type == NAME);
+    assert(t->right->left->name == INITIAL_NAME);
+    assert(t->right->left->left == NULL);
+    assert(t->right->left->right == NULL);
+    assert(t->right->right->type == NAME);
+    assert(t->right->right->name == INITIAL_NAME + 1);
+    assert(t->right->right->left == NULL);
+    assert(t->right->right->right == NULL);
+}
+
+void test_create_AST_null_stream(){
+    Token t = create_AST(NULL);
+    
+    assert(t == NULL);
+}
+
+void run_create_AST_tests(){
+    TEST_GROUP_INDICATOR("create_AST()")
+    test_create_AST_INIT();
+    test_create_AST_TERM();
+    test_create_AST_PATH();
+    test_create_AST_OUTN();
+    test_create_AST_OUTC();
+    test_create_AST_SET();
+    test_create_AST_BIFURC();
+    test_create_AST_null_stream();
+}
+
 /* END TEST DECLARATIONS */
 
 void run_parser_tests(){
@@ -317,6 +504,7 @@ void run_parser_tests(){
     test_can_start_line();
     run_pop_operator_tests();
     run_parse_infix_expression_tests();
+    run_create_AST_tests();
     
     TEST_FILE_END_INDICATOR("parser")
 }
