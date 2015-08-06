@@ -30,7 +30,7 @@ void run_get_token_length_tests(){
 /* {push, pop}_token_stack() */
 
 void test_push_token_stack(){
-    Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
+    Token (*test)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
     Token s = make_builtin_token(COLLAPSE, NULL);
@@ -47,7 +47,7 @@ void test_push_token_stack(){
 }
 
 void test_pop_token_stack_non_empty(){
-    Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
+    Token (*test)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
     Token s = make_builtin_token(EXPAND, NULL);
@@ -63,7 +63,7 @@ void test_pop_token_stack_non_empty(){
 }
 
 void test_pop_token_stack_empty(){
-    Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
+    Token (*test)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
     unsigned len = 0;
     
     Token x = pop_token_stack(test, &len);
@@ -111,8 +111,8 @@ void test_pop_operator_unary_operators(){
             continue;
         if(get_arity(i) != 1)
             continue;
-        Token (*operators)[TOKEN_STACK_SIZE] = malloc(sizeof(operators));
-        Token (*output)[TOKEN_STACK_SIZE] = malloc(sizeof(output));
+        Token (*operators)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
+        Token (*output)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
         unsigned operatorsLen = 0;
         unsigned outputLen = 0;
         push_token_stack(make_builtin_token(i, NULL), operators, &operatorsLen);
@@ -141,8 +141,8 @@ void test_pop_operator_binary_operators(){
             continue;
         if(get_arity(i) != 2)
             continue;
-        Token (*operators)[TOKEN_STACK_SIZE] = malloc(sizeof(operators));
-        Token (*output)[TOKEN_STACK_SIZE] = malloc(sizeof(output));
+        Token (*operators)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
+        Token (*output)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
         unsigned operatorsLen = 0;
         unsigned outputLen = 0;
         push_token_stack(make_builtin_token(i, NULL), operators, &operatorsLen);
