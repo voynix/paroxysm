@@ -238,14 +238,6 @@ void test_parse_infix_expression_parentheses(){
     s = make_name_token(INITIAL_NAME + 1, s);
     s = make_builtin_token(R_PAREN, s);
     
-    assert(get_token_length(t) == 7);
-    assert(t->next->next->builtin == L_PAREN);
-    Token x = t;
-    while(x != NULL){
-        printf("%i\n", (unsigned)x);
-        x = x->next;
-    }
-    
     t = parse_infix_expression(t);
     
     assert(t != NULL);
@@ -271,6 +263,33 @@ void test_parse_infix_expression_parentheses(){
     assert(t->right->right->right == NULL);
 }
 
+void test_parse_infix_expression_precedence(){
+    Token t = make_builtin_token(NEG, NULL);
+    Token s = make_literal_token(-20, t);
+    s = make_builtin_token(AND, s);
+    s = make_literal_token(2, s);
+    
+    t = parse_infix_expression(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == AND);
+    assert(t->left != NULL);
+    assert(t->right != NULL);
+    assert(t->left->type == BUILTIN);
+    assert(t->left->builtin == NEG);
+    assert(t->left->left != NULL);
+    assert(t->left->right == NULL);
+    assert(t->left->left->type == LITERAL);
+    assert(t->left->left->literal == -20);
+    assert(t->left->left->left == NULL);
+    assert(t->left->left->right == NULL);
+    assert(t->right->type == LITERAL);
+    assert(t->right->literal == 2);
+    assert(t->right->left == NULL);
+    assert(t->right->right == NULL);
+}
+
 void test_parse_infix_expression_null_expression(){
     Token t = parse_infix_expression(NULL);
     
@@ -281,8 +300,8 @@ void run_parse_infix_expression_tests(){
     TEST_GROUP_INDICATOR("parse_infix_expression()")
     test_parse_infix_expression_unary_operators();
     test_parse_infix_expression_binary_operators();
-    printf("\n\n");
     test_parse_infix_expression_parentheses();
+    test_parse_infix_expression_precedence();
     test_parse_infix_expression_null_expression();
 }
 

@@ -141,28 +141,22 @@ int can_start_line(BuiltinType b){
 void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, Token (*output)[TOKEN_STACK_SIZE], unsigned* outputLen){
     Token op = pop_token_stack(operators, operatorsLen);
     assert(op->type == BUILTIN);
-    printf("pop_operator called with builtin %i\n", op->builtin);
     if(get_arity(op->builtin) == 1){
         if(*outputLen < 1){
             assert(0); // TODO: proper error handling
         }
         op->left = pop_token_stack(output, outputLen);
     } else { // all the other infix ops are binary
-        printf("PRE %i\t%i\n", (unsigned)(*output)[0], (unsigned)(*output)[1]);
         assert(get_arity(op->builtin) == 2);
         if(*outputLen < 2){
             assert(0); // TODO: proper error handling
         }
         // stack, so fill in operands in reverse order
         op->right = pop_token_stack(output, outputLen);
-        printf("op->right is %i; outputLen is %i\n", (unsigned)op->right, *outputLen);
         op->left = pop_token_stack(output, outputLen);
-        printf("op->left is %i; outputLen is %i\n", (unsigned)op->left, *outputLen);
-        assert(op->right != op->left); // TODO: figure out why this is failing!!
+        assert(op->right != op->left);
     }
     push_token_stack(op, output, outputLen);
-    printf("outputLen is now %i\n", *outputLen);
-    printf("POST %i\t%i\n", (unsigned)(*output)[0], (unsigned)(*output)[1]);
 }
 
 /*
@@ -173,11 +167,11 @@ void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, 
 Token parse_infix_expression(Token tokens){
     // see http://stackoverflow.com/questions/1810083/c-pointers-pointing-to-an-array-of-fixed-size
     // for explanation of this type signature
-    Token (*operators)[TOKEN_STACK_SIZE] = malloc(sizeof(operators));
+    Token (*operators)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
     assert(operators != NULL);
     unsigned operatorsLen = 0;
     
-    Token (*output)[TOKEN_STACK_SIZE] = malloc(sizeof(output));
+    Token (*output)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
     assert(output != NULL);
     unsigned outputLen = 0;
     
@@ -186,22 +180,17 @@ Token parse_infix_expression(Token tokens){
         nextToken = tokens->next;
         // if it's not a builtin, stick it in output
         if(tokens->type != BUILTIN){
-            printf("pushing token %i to output\n", (unsigned)tokens);
             push_token_stack(tokens, output, &outputLen);
-            printf("output[0] is %i\n", (unsigned)(*output)[0]);
         } else { // if it's a builtin, do magic
             // check if it's allowed to be here
             if(can_start_line(tokens->builtin)){
                 assert(0); // TODO: proper error handling
             }
             if(operatorsLen == 0){
-                printf("pushed %i\n", tokens->builtin);
                 push_token_stack(tokens, operators, &operatorsLen);
             } else if(tokens->builtin == L_PAREN){
-                printf("pushed L_PAREN\n");
                 push_token_stack(tokens, operators, &operatorsLen);
             } else if(tokens->builtin == R_PAREN){
-                printf("invoking R_PAREN\n");
                 // pop operators until L_PAREN
                 free_token(&tokens); // we don't need the R_PAREN
                 while(operatorsLen > 0 && (*operators)[operatorsLen - 1]->builtin != L_PAREN)
@@ -211,18 +200,13 @@ Token parse_infix_expression(Token tokens){
                 } else {
                     // discard the L_PAREN
                     Token discard = pop_token_stack(operators, &operatorsLen);
-                    printf("discarding %i\n", (unsigned)discard);
                     free_token(&discard);
                 }
             } else if(get_precedence(tokens->builtin) > get_precedence((*operators)[operatorsLen - 1]->builtin)){
-                printf("invoking precedence with %i\n", tokens->builtin);
-                printf("PRE output[0] is %i\n", (unsigned)(*output)[0]);
-                push_token_stack(tokens, operators, &operatorsLen); // WHY IS THIS ALSO CHANGING output[0]???
-                printf("POST output[0] is %i\n", (unsigned)(*output)[0]);
+                push_token_stack(tokens, operators, &operatorsLen);
             } else {
                 // we are not a parenthesis and we're lower precedence than
                 // the operator on the stack, so pop it and put us there
-                printf("flipping stack with %i\n", tokens->builtin);
                 pop_operator(operators, &operatorsLen, output, &outputLen);
                 push_token_stack(tokens, operators, &operatorsLen);
             }
@@ -231,10 +215,8 @@ Token parse_infix_expression(Token tokens){
     }
     
     // pop all remaining operators
-    while(operatorsLen > 0){
-        printf("cleaning stack with %i; len %i\n", (*operators)[operatorsLen - 1]->builtin, operatorsLen);
+    while(operatorsLen > 0)
         pop_operator(operators, &operatorsLen, output, &outputLen);
-    }
     
     if(outputLen > 1){ // indicates malformed expression
         assert(0); // TODO: proper error handling
