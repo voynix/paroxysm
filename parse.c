@@ -139,13 +139,14 @@ int can_start_line(BuiltinType b){
  */
 void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, Token (*output)[TOKEN_STACK_SIZE], unsigned* outputLen){
     Token op = pop_token_stack(operators, operatorsLen);
-    if(op->builtin == NEG){
+    if(get_arity(op->builtin) == 1){
         if(*outputLen < 1){
             assert(0); // TODO: proper error handling
         }
         op->left = pop_token_stack(output, outputLen);
-    } else{
-        if(*outputLen < 2){ // all the other infix ops are binary
+    } else { // all the other infix ops are binary
+        assert(get_arity(op->builtin) == 2);
+        if(*outputLen < 2){
             assert(0); // TODO: proper error handling
         }
         // stack, so fill in operands in reverse order

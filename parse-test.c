@@ -93,6 +93,77 @@ void test_can_start_line(){ // this is mostly pointless, but *shrug*
         assert(can_start_line(i) == 1 || can_start_line(i) == 0);
 }
 
+/* pop_operator */
+
+void test_pop_operator_unary_operators(){
+    for(int i = 0; i < NUM_BUILTINS; i++){
+        if(can_start_line(i))
+            continue;
+        if(get_arity(i) != 1)
+            continue;
+        Token (*operators)[TOKEN_STACK_SIZE] = malloc(sizeof(operators));
+        Token (*output)[TOKEN_STACK_SIZE] = malloc(sizeof(output));
+        unsigned operatorsLen = 0;
+        unsigned outputLen = 0;
+        push_token_stack(make_builtin_token(i, NULL), operators, &operatorsLen);
+        push_token_stack(make_literal_token(2 << 30, NULL), output, &outputLen);
+        
+        pop_operator(operators, &operatorsLen, output, &outputLen);
+        
+        assert(operatorsLen == 0);
+        assert(outputLen == 1);
+        Token tokens = pop_token_stack(output, &outputLen);
+        assert(tokens->type == BUILTIN);
+        assert(tokens->builtin == i);
+        assert(tokens->left != NULL);
+        assert(tokens->right == NULL);
+        assert(tokens->left->type == LITERAL);
+        assert(tokens->left->literal == 2 << 30);
+        assert(tokens->left->left == NULL);
+        assert(tokens->left->right == NULL);
+    }
+}
+
+void test_pop_operator_binary_operators(){
+    for(int i = 0; i < NUM_BUILTINS; i++){
+        if(can_start_line(i))
+            continue;
+        if(get_arity(i) != 2)
+            continue;
+        Token (*operators)[TOKEN_STACK_SIZE] = malloc(sizeof(operators));
+        Token (*output)[TOKEN_STACK_SIZE] = malloc(sizeof(output));
+        unsigned operatorsLen = 0;
+        unsigned outputLen = 0;
+        push_token_stack(make_builtin_token(i, NULL), operators, &operatorsLen);
+        push_token_stack(make_literal_token(12, NULL), output, &outputLen);
+        push_token_stack(make_literal_token(-13, NULL), output, &outputLen);
+        
+        pop_operator(operators, &operatorsLen, output, &outputLen);
+        
+        assert(operatorsLen == 0);
+        assert(outputLen == 1);
+        Token tokens = pop_token_stack(output, &outputLen);
+        assert(tokens->type == BUILTIN);
+        assert(tokens->builtin == i);
+        assert(tokens->left != NULL);
+        assert(tokens->right != NULL);
+        assert(tokens->left->type == LITERAL);
+        assert(tokens->left->literal == 12);
+        assert(tokens->left->left == NULL);
+        assert(tokens->left->right == NULL);
+        assert(tokens->right->type == LITERAL);
+        assert(tokens->right->literal == -13);
+        assert(tokens->right->left == NULL);
+        assert(tokens->right->right == NULL);
+    }
+}
+
+void run_pop_operator_tests(){
+    TEST_GROUP_INDICATOR("pop_operator()")
+    test_pop_operator_unary_operators();
+    test_pop_operator_binary_operators();
+}
+
 /* END TEST DECLARATIONS */
 
 void run_parser_tests(){
@@ -103,6 +174,7 @@ void run_parser_tests(){
     test_get_precedence();
     test_get_arity();
     test_can_start_line();
+    run_pop_operator_tests();
     
     TEST_FILE_END_INDICATOR("parser")
 }
