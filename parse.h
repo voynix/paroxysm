@@ -9,7 +9,7 @@ typedef unsigned short PrecedenceType;
 typedef unsigned short ArityType;
 
 // the max number of tokens we can process per line
-const short TOKEN_STACK_SIZE;
+const unsigned short TOKEN_STACK_SIZE;
 
 int get_token_length(Token t);
 
@@ -22,6 +22,6 @@ int can_start_line(BuiltinType b);
 
 void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, Token (*output)[TOKEN_STACK_SIZE], unsigned* outputLen);
 Token parse_infix_expression(Token tokens);
-void create_AST(Token* tokens);
+Token create_AST(Token tokens);
 
 #endif

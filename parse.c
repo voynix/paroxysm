@@ -1,6 +1,6 @@
 #include "parse.h"
 
-const short TOKEN_STACK_SIZE = 200;
+const unsigned short TOKEN_STACK_SIZE = 200;
 const PrecedenceType DEFAULT_PRECEDENCE = 20;
 const ArityType DEFAULT_ARITY = 20;
 
@@ -41,6 +41,7 @@ Token pop_token_stack(Token (*stack)[TOKEN_STACK_SIZE], unsigned* stackLength){
  */
 PrecedenceType get_precedence(BuiltinType b){
     switch(b){
+        // the my-precedence-doesn't-real club:
         case EXPAND:
         case COLLAPSE:
         case INIT:
@@ -50,7 +51,10 @@ PrecedenceType get_precedence(BuiltinType b){
         case BIFURC:
         case OUTN:
         case OUTC:
+        case L_PAREN:
+        case R_PAREN:
             return 0;
+        // actual precedence begins here
         case AND:
         case OR:
             return 1;
@@ -61,17 +65,14 @@ PrecedenceType get_precedence(BuiltinType b){
         case L_SHIFT:
         case R_SHIFT:
             return 3;
-        case PLUS:
-        case MINUS:
+        case ADD:
+        case SUBTRACT:
         case BIT_AND:
         case BIT_OR:
             return 4;
         case MULTIPLY:
         case DIVIDE:
             return 5;
-        case L_PAREN:
-        case R_PAREN:
-            return 6;
     }
     return DEFAULT_PRECEDENCE;
 }
@@ -100,8 +101,8 @@ ArityType get_arity(BuiltinType b){
         case GREATER_THAN:
         case L_SHIFT:
         case R_SHIFT:
-        case PLUS:
-        case MINUS:
+        case ADD:
+        case SUBTRACT:
         case BIT_AND:
         case BIT_OR:
         case MULTIPLY:
@@ -139,25 +140,33 @@ int can_start_line(BuiltinType b){
  */
 void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, Token (*output)[TOKEN_STACK_SIZE], unsigned* outputLen){
     Token op = pop_token_stack(operators, operatorsLen);
+    assert(op->type == BUILTIN);
+    printf("pop_operator called with builtin %i\n", op->builtin);
     if(get_arity(op->builtin) == 1){
         if(*outputLen < 1){
             assert(0); // TODO: proper error handling
         }
         op->left = pop_token_stack(output, outputLen);
     } else { // all the other infix ops are binary
+        printf("PRE %i\t%i\n", (unsigned)(*output)[0], (unsigned)(*output)[1]);
         assert(get_arity(op->builtin) == 2);
         if(*outputLen < 2){
             assert(0); // TODO: proper error handling
         }
         // stack, so fill in operands in reverse order
         op->right = pop_token_stack(output, outputLen);
+        printf("op->right is %i; outputLen is %i\n", (unsigned)op->right, *outputLen);
         op->left = pop_token_stack(output, outputLen);
+        printf("op->left is %i; outputLen is %i\n", (unsigned)op->left, *outputLen);
+        assert(op->right != op->left); // TODO: figure out why this is failing!!
     }
     push_token_stack(op, output, outputLen);
+    printf("outputLen is now %i\n", *outputLen);
+    printf("POST %i\t%i\n", (unsigned)(*output)[0], (unsigned)(*output)[1]);
 }
 
 /*
- * Parse and infix expression from a token stream
+ * Parse an infix expression from a token stream
  * Returns a parse tree
  * See https://en.wikipedia.org/wiki/Shunting-yard_algorithm
  */
@@ -177,33 +186,43 @@ Token parse_infix_expression(Token tokens){
         nextToken = tokens->next;
         // if it's not a builtin, stick it in output
         if(tokens->type != BUILTIN){
+            printf("pushing token %i to output\n", (unsigned)tokens);
             push_token_stack(tokens, output, &outputLen);
+            printf("output[0] is %i\n", (unsigned)(*output)[0]);
         } else { // if it's a builtin, do magic
             // check if it's allowed to be here
             if(can_start_line(tokens->builtin)){
                 assert(0); // TODO: proper error handling
             }
             if(operatorsLen == 0){
+                printf("pushed %i\n", tokens->builtin);
                 push_token_stack(tokens, operators, &operatorsLen);
             } else if(tokens->builtin == L_PAREN){
+                printf("pushed L_PAREN\n");
                 push_token_stack(tokens, operators, &operatorsLen);
             } else if(tokens->builtin == R_PAREN){
+                printf("invoking R_PAREN\n");
                 // pop operators until L_PAREN
                 free_token(&tokens); // we don't need the R_PAREN
-                while((*operators)[operatorsLen - 1]->builtin != L_PAREN && operatorsLen > 0)
+                while(operatorsLen > 0 && (*operators)[operatorsLen - 1]->builtin != L_PAREN)
                     pop_operator(operators, &operatorsLen, output, &outputLen);
                 if(operatorsLen == 0){ // there was no L_PAREN, so error
                     assert(0); // TODO: proper error handling
                 } else {
                     // discard the L_PAREN
                     Token discard = pop_token_stack(operators, &operatorsLen);
+                    printf("discarding %i\n", (unsigned)discard);
                     free_token(&discard);
                 }
-            } else if(get_precedence(tokens->builtin) > get_precedence((*operators)[0]->builtin)){
-                push_token_stack(tokens, operators, &operatorsLen);
+            } else if(get_precedence(tokens->builtin) > get_precedence((*operators)[operatorsLen - 1]->builtin)){
+                printf("invoking precedence with %i\n", tokens->builtin);
+                printf("PRE output[0] is %i\n", (unsigned)(*output)[0]);
+                push_token_stack(tokens, operators, &operatorsLen); // WHY IS THIS ALSO CHANGING output[0]???
+                printf("POST output[0] is %i\n", (unsigned)(*output)[0]);
             } else {
                 // we are not a parenthesis and we're lower precedence than
                 // the operator on the stack, so pop it and put us there
+                printf("flipping stack with %i\n", tokens->builtin);
                 pop_operator(operators, &operatorsLen, output, &outputLen);
                 push_token_stack(tokens, operators, &operatorsLen);
             }
@@ -212,12 +231,16 @@ Token parse_infix_expression(Token tokens){
     }
     
     // pop all remaining operators
-    while(operatorsLen > 0)
+    while(operatorsLen > 0){
+        printf("cleaning stack with %i; len %i\n", (*operators)[operatorsLen - 1]->builtin, operatorsLen);
         pop_operator(operators, &operatorsLen, output, &outputLen);
+    }
     
-    Token retval = pop_token_stack(output, &outputLen);
+    if(outputLen > 1){ // indicates malformed expression
+        assert(0); // TODO: proper error handling
+    }
     
-    // TODO: cleanup, possibly??
+    Token retval = pop_token_stack(output, &outputLen); // if stack was empty, retval <- NULL
     
     //let's not leak memory
     free(output);
@@ -228,31 +251,31 @@ Token parse_infix_expression(Token tokens){
 
 /*
  * Turns a token stream into an AST
- * Returns the AST in the argument tokens
+ * Returns the AST
  */
-void create_AST(Token* tokens){
-    if((*tokens)->type != BUILTIN){
+Token create_AST(Token tokens){
+    if(tokens->type != BUILTIN){
         assert(0); // TODO: proper error handling
         // this should be a syntax error of some sort, probably
     }
-    if(!can_start_line((*tokens)->builtin)){
+    if(!can_start_line(tokens->builtin)){
         assert(0); // TODO: proper error handling
         // this should also be a syntax error
     }
-    if(*tokens == NULL)
-        return;
+    if(tokens == NULL)
+        return NULL;
     
     // now we're assured of having a builtin, so let's grab it
-    Token output = *tokens;
-    *tokens = (*tokens)->next;
+    Token output = tokens;
+    tokens = tokens->next;
     
     // now let's grab the operands for our builtin
     
     // sanity checking
-    if(get_arity(output->builtin) == 0 && *tokens != NULL){
+    if(get_arity(output->builtin) == 0 && tokens != NULL){
         assert(0); // TODO: proper error handling
         // eg don't follow EXPAND with a value, etc
-    } else if(get_arity(output->builtin) > get_token_length(*tokens)){
+    } else if(get_arity(output->builtin) > get_token_length(tokens)){
         assert(0); // TODO: proper error handling
         // first check for insufficient operands
     }
@@ -268,37 +291,34 @@ void create_AST(Token* tokens){
         case INIT:
         case TERM:
         case PATH:
-            if((*tokens)->type != NAME){
+            if(tokens->type != NAME){
                 assert(0); // TODO: proper error handling
             }
-            output->left = *tokens;
+            output->left = tokens;
             break;
         // one expression
         case OUTN:
         case OUTC:
-            output->left = parse_infix_expression(*tokens);
+            output->left = parse_infix_expression(tokens);
             if(get_token_length(output->left) > 1){ // ie malformed expression
                 assert(0); // TODO: proper error handling
             }
             break;
         // one name followed by one expression
         case SET:
-            if((*tokens)->type != NAME){
+            if(tokens->type != NAME){
                 assert(0); // TODO: proper error handling
             }
-            output->left = *tokens;
-            output->right = parse_infix_expression((*tokens)->next);
-            if(get_token_length(output->right) > 1){ // ie malformed expression
-                assert(0); // TODO: proper error handling
-            }
+            output->left = tokens;
+            output->right = parse_infix_expression(tokens->next);
             break;
         // one expression followed by two names
         case BIFURC:
             // dummy token to hold the two paths
             output->right = make_builtin_token(BIFURC, NULL);
             // grab the two paths
-            Token newEnd = *tokens;
-            for(int i = 0; i < get_token_length(*tokens) - 3; i++)
+            Token newEnd = tokens;
+            for(int i = 0; i < get_token_length(tokens) - 3; i++)
                 newEnd = newEnd->next;
             output->right->left = newEnd->next;
             output->right->right = newEnd->next->next;
@@ -309,14 +329,11 @@ void create_AST(Token* tokens){
             // chop the two paths we grabbed off the token stream
             newEnd->next = NULL;
             // grab the expression at last
-            output->left = parse_infix_expression(*tokens);
+            output->left = parse_infix_expression(tokens);
             break;
         default: // do nothing for builtins with arity 0
             break;
     }
     
-    // call to parse_infix_expression here as needed, based on arity, etc
-    // possibly after grabbing non-expr operands, of course
-    
-    *tokens = output;
+    return output;
 }

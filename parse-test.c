@@ -33,23 +33,33 @@ void test_push_token_stack(){
     Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
+    Token s = make_builtin_token(COLLAPSE, NULL);
+    Token r = make_builtin_token(ADD, NULL);
     
     push_token_stack(t, test, &len);
+    push_token_stack(s, test, &len);
+    push_token_stack(r, test, &len);
     
-    assert(len == 1);
+    assert(len == 3);
     assert((*test)[0] == t);
+    assert((*test)[1] == s);
+    assert((*test)[2] == r);
 }
 
 void test_pop_token_stack_non_empty(){
     Token (*test)[TOKEN_STACK_SIZE] = malloc(sizeof(test));
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
+    Token s = make_builtin_token(EXPAND, NULL);
     push_token_stack(t, test, &len);
+    push_token_stack(s, test, &len);
     
     Token x = pop_token_stack(test, &len);
+    Token y = pop_token_stack(test, &len);
     
     assert(len == 0);
-    assert(x == t);
+    assert(x == s);
+    assert(y == t);
 }
 
 void test_pop_token_stack_empty(){
@@ -113,6 +123,7 @@ void test_pop_operator_unary_operators(){
         assert(operatorsLen == 0);
         assert(outputLen == 1);
         Token tokens = pop_token_stack(output, &outputLen);
+        assert(tokens != NULL);
         assert(tokens->type == BUILTIN);
         assert(tokens->builtin == i);
         assert(tokens->left != NULL);
@@ -143,6 +154,7 @@ void test_pop_operator_binary_operators(){
         assert(operatorsLen == 0);
         assert(outputLen == 1);
         Token tokens = pop_token_stack(output, &outputLen);
+        assert(tokens != NULL);
         assert(tokens->type == BUILTIN);
         assert(tokens->builtin == i);
         assert(tokens->left != NULL);
@@ -164,6 +176,116 @@ void run_pop_operator_tests(){
     test_pop_operator_binary_operators();
 }
 
+/* parse_infix_expression */
+
+void test_parse_infix_expression_unary_operators(){
+    for(int i = 0; i < NUM_BUILTINS; i++){
+        if(can_start_line(i))
+            continue;
+        if(get_arity(i) != 1)
+            continue;
+        Token t = make_builtin_token(i, NULL);
+        make_literal_token(0, t);
+        
+        t = parse_infix_expression(t);
+        
+        assert(t != NULL);
+        assert(t->type == BUILTIN);
+        assert(t->builtin == i);
+        assert(t->left != NULL);
+        assert(t->right == NULL);
+        assert(t->left->type == LITERAL);
+        assert(t->left->literal == 0);
+        assert(t->left->left == NULL);
+        assert(t->left->right == NULL);
+    }
+}
+
+void test_parse_infix_expression_binary_operators(){
+    for(int i = 0; i < NUM_BUILTINS; i++){
+        if(can_start_line(i))
+            continue;
+        if(get_arity(i) != 2)
+            continue;
+        Token t = make_literal_token(0, NULL);
+        Token s = make_builtin_token(i, t);
+        make_name_token(INITIAL_NAME, s);
+        
+        t = parse_infix_expression(t);
+        
+        assert(t != NULL);
+        assert(t->type == BUILTIN);
+        assert(t->builtin == i);
+        assert(t->left != NULL);
+        assert(t->right != NULL);
+        assert(t->left->type == LITERAL);
+        assert(t->left->literal == 0);
+        assert(t->left->left == NULL);
+        assert(t->left->right == NULL);
+        assert(t->right->type == NAME);
+        assert(t->right->name == INITIAL_NAME);
+        assert(t->right->left == NULL);
+        assert(t->right->right == NULL);
+    }
+}
+
+void test_parse_infix_expression_parentheses(){
+    Token t = make_literal_token(0, NULL);
+    Token s = make_builtin_token(MULTIPLY, t);
+    s = make_builtin_token(L_PAREN, s);
+    s = make_name_token(INITIAL_NAME, s);
+    s = make_builtin_token(ADD, s);
+    s = make_name_token(INITIAL_NAME + 1, s);
+    s = make_builtin_token(R_PAREN, s);
+    
+    assert(get_token_length(t) == 7);
+    assert(t->next->next->builtin == L_PAREN);
+    Token x = t;
+    while(x != NULL){
+        printf("%i\n", (unsigned)x);
+        x = x->next;
+    }
+    
+    t = parse_infix_expression(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == MULTIPLY);
+    assert(t->left != NULL);
+    assert(t->right != NULL);
+    assert(t->left->type == LITERAL);
+    assert(t->left->literal == 0);
+    assert(t->left->left == NULL);
+    assert(t->left->right == NULL);
+    assert(t->right->type == BUILTIN);
+    assert(t->right->builtin == ADD);
+    assert(t->right->left != NULL);
+    assert(t->right->right != NULL);
+    assert(t->right->left->type == NAME);
+    assert(t->right->left->name == INITIAL_NAME);
+    assert(t->right->left->left == NULL);
+    assert(t->right->left->right == NULL);
+    assert(t->right->right->type == NAME);
+    assert(t->right->right->name == INITIAL_NAME + 1);
+    assert(t->right->right->left == NULL);
+    assert(t->right->right->right == NULL);
+}
+
+void test_parse_infix_expression_null_expression(){
+    Token t = parse_infix_expression(NULL);
+    
+    assert(t == NULL);
+}
+
+void run_parse_infix_expression_tests(){
+    TEST_GROUP_INDICATOR("parse_infix_expression()")
+    test_parse_infix_expression_unary_operators();
+    test_parse_infix_expression_binary_operators();
+    printf("\n\n");
+    test_parse_infix_expression_parentheses();
+    test_parse_infix_expression_null_expression();
+}
+
 /* END TEST DECLARATIONS */
 
 void run_parser_tests(){
@@ -175,6 +297,7 @@ void run_parser_tests(){
     test_get_arity();
     test_can_start_line();
     run_pop_operator_tests();
+    run_parse_infix_expression_tests();
     
     TEST_FILE_END_INDICATOR("parser")
 }
