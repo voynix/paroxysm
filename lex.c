@@ -1,7 +1,7 @@
 #include "lex.h"
 
 // for Names
-const unsigned int INITIAL_NAME = 0;
+const unsigned INITIAL_NAME = 0;
 
 // for token boundary finding
 const int EOL = -1;

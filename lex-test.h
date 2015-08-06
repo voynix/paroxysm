@@ -4,7 +4,7 @@
 #include "test-defs.h"
 #include "lex.h"
 
-extern const unsigned int INITIAL_NAME;
+extern const unsigned INITIAL_NAME;
 extern const int EOL;
 extern const char COMMENT_CHAR;
 extern const int NUM_BUILTINS;

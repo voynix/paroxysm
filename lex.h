@@ -7,7 +7,7 @@
 
 typedef enum {BUILTIN, NAME, LITERAL} TokenType;
 typedef enum {EXPAND, COLLAPSE, INIT, TERM, SET, PATH, BIFURC, OUTN, OUTC, AND, OR, PLUS, MINUS, MULTIPLY, DIVIDE, L_SHIFT, R_SHIFT, LESS_THAN, GREATER_THAN, BIT_AND, BIT_OR, NEG, L_PAREN, R_PAREN} BuiltinType;
-typedef unsigned int NameType;
+typedef unsigned NameType;
 typedef int LiteralType;
 typedef char* FullNameType;
 
