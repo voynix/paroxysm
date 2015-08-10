@@ -1,14 +1,11 @@
-//
-//  eval-test.h
-//  
-//
-//  Created by Celeritas on 8/9/15.
-//
-//
-
 #ifndef ____eval_test__
 #define ____eval_test__
 
-#include <stdio.h>
+#include "test-defs.h"
+#include "eval.h"
 
-#endif /* defined(____eval_test__) */
+extern const unsigned INITIAL_NAME;
+
+void run_evaluator_tests();
+
+#endif

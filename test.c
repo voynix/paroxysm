@@ -5,6 +5,7 @@ int main(int argc, char* argv[]){
     
     run_lexer_tests();
     run_parser_tests();
+    run_evaluator_tests();
     
     printf("ALL TESTS PASSED!\n");
 }
