@@ -17,11 +17,11 @@ void test_make_name(){
 
 void test_free_name(){
     TEST_GROUP_INDICATOR("free_name()")
-    Name test_name = make_name("foo", INITIAL_NAME, NULL);
+    Name testName = make_name("foo", INITIAL_NAME, NULL);
     
-    free_name(&test_name);
+    free_name(&testName);
     
-    assert(test_name == NULL);
+    assert(testName == NULL);
     // we don't really have a way to test that the char* was freed...
 }
 
