@@ -51,3 +51,66 @@ void free_scope(Scope* scope){
     free(*scope);
     *scope = NULL;
 }
+
+/*
+ * Create a new Variable with the given values in the current Scope 
+ * if no Variable by the given name exists already
+ */
+void create_variable(Scope scope, NameType name, ValueType value){
+    assert(scope != NULL);
+    
+    Variable v = scope->variables;
+    while(v != NULL){
+        // if a variable with this name already exists somewhere, we're done
+        if(name == v->name)
+            return;
+        v = v->next;
+    }
+    scope->variables = make_variable(name, value, scope->variables);
+}
+
+/*
+ * Set the given Variable to the given value, assuming it exists
+ */
+void set_variable(Scope scope, NameType name, ValueType value){
+    assert(scope != NULL);
+    
+    Variable v = scope->variables;
+    while(v != NULL){
+        if(name == v->name){
+            v->value = value;
+            return;
+        }
+        v = v->next;
+    }
+    assert(0); // TODO: proper error handling
+}
+
+/*
+ * Get the value for the given variable, assuming it exists
+ */
+ValueType get_variable(Scope scope, NameType name){
+    assert(scope != NULL);
+    
+    Variable v = scope->variables;
+    while(v != NULL){
+        if(name == v->name)
+            return v->value;
+        v = v->next;
+    }
+    assert(0); // TODO: proper error handling
+}
+
+/*
+ * Remove the first instance of the given variable found
+ */
+void delete_variable(Scope scope, NameType name){
+    assert(scope != NULL);
+    
+    Variable nextScope = (scope->next == NULL ? NULL : scope->next->variables);
+    for(Variable v = scope->variables; v != nextScope; v = v->next)
+        if(name == v->name){
+            // TODO: logic
+        }
+    
+}
