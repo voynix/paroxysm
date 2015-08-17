@@ -23,6 +23,28 @@ void free_variable(Variable* variable){
 }
 
 /*
+ * Creates a new PathRec with the given values
+ * Returns the created PathRec
+ */
+Path make_path(NameType name, LineType line, Path next){
+    Path retVal = (Path) malloc(sizeof(PathRec));
+    assert(retVal != NULL);
+    retVal->name = name;
+    retVal->line = line;
+    retVal->next = next;
+    return retVal;
+}
+
+/*
+ * Frees a Path
+ */
+void free_path(Path* path){
+    assert(*path != NULL);
+    free(*path);
+    *path = NULL;
+}
+
+/*
  * Creates a new ScopeRec with the given values
  * Returns the created ScopeRec
  */
@@ -128,6 +150,22 @@ void delete_variable(Scope scope, NameType name){
     }
     
     // we didn't find the variable to delete, so something went wrong
+    assert(0); // TODO: proper error handling
+}
+
+/*
+ * Returns the line number for the given path
+ */
+LineType get_path(Path pathList, NameType name){
+    assert(pathList != NULL);
+    
+    while(pathList != NULL){
+        if(pathList->name == name)
+            return pathList->line;
+        pathList = pathList->next;
+    }
+
+    // we didn't find the path, so something went wrong
     assert(0); // TODO: proper error handling
 }
 

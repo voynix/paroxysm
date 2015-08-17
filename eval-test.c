@@ -24,6 +24,30 @@ void test_free_variable(){
     assert(testVar == NULL);
 }
 
+/* make_path() */
+
+void test_make_path(){
+    TEST_GROUP_INDICATOR("make_path()")
+    
+    Path testPath = make_path(INITIAL_NAME, 1, NULL);
+    
+    assert(testPath != NULL);
+    assert(testPath->name == INITIAL_NAME);
+    assert(testPath->line == 1);
+    assert(testPath->next == NULL);
+}
+
+/* free_path() */
+
+void test_free_path(){
+    TEST_GROUP_INDICATOR("free_path()")
+    Path testPath = make_path(INITIAL_NAME + 2, 12, NULL);
+    
+    free_path(&testPath);
+    
+    assert(testPath == NULL);
+}
+
 /* make_scope() */
 
 void test_make_scope(){
@@ -214,6 +238,19 @@ void run_delete_variable_tests(){
     test_delete_variable_multiple_scopes();
 }
 
+/* get_path() */
+
+void test_get_path(){
+    TEST_GROUP_INDICATOR("get_path")
+    Path pathList = make_path(INITIAL_NAME, 0, NULL);
+    pathList = make_path(INITIAL_NAME + 1, 1, pathList);
+    pathList = make_path(INITIAL_NAME + 2, 2, pathList);
+    pathList = make_path(INITIAL_NAME + 3, 3, pathList);
+    pathList = make_path(INITIAL_NAME + 4, 4, pathList);
+    
+    assert(get_path(pathList, INITIAL_NAME + 3) == 3);
+}
+
 /* push_scope_stack() */
 
 void test_push_scope_stack_empty_scope_empty_stack(){
@@ -352,12 +389,15 @@ void run_evaluator_tests(){
     
     test_make_variable();
     test_free_variable();
+    test_make_path();
+    test_free_path();
     test_make_scope();
     test_free_scope();
     run_create_variable_tests();
     test_set_variable();
     test_get_variable();
     run_delete_variable_tests();
+    test_get_path();
     run_push_scope_stack_tests();
     run_pop_scope_stack_tests();
     
