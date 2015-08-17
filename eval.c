@@ -105,10 +105,28 @@ ValueType get_variable(Scope scope, NameType name){
 void delete_variable(Scope scope, NameType name){
     assert(scope != NULL);
     
-    Variable nextScope = (scope->next == NULL ? NULL : scope->next->variables);
-    for(Variable v = scope->variables; v != nextScope; v = v->next)
-        if(name == v->name){
-            // TODO: logic
-        }
+    Variable currentVariable = scope->variables;
+    Variable prevVariable = NULL;
     
+    while(currentVariable != NULL){
+        // if we've found the variable, delete it
+        if(name == currentVariable->name){
+            if(prevVariable != NULL)
+                prevVariable->next = currentVariable->next;
+            // if we have multiple scopes pointing at this variable
+            // walk the entire scope list, correcting as we go
+            for(Scope s = scope; s != NULL; s = s->next)
+                if(s->variables == currentVariable)
+                    s->variables = currentVariable->next;
+            free_variable(&currentVariable);
+            return;
+        }
+        
+        // let's walk
+        prevVariable = currentVariable;
+        currentVariable = currentVariable->next;
+    }
+    
+    // we didn't find the variable to delete, so something went wrong
+    assert(0); // TODO: proper error handling
 }
