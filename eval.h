@@ -15,7 +15,6 @@ typedef struct VariableRec {
 typedef struct VariableRec* Variable;
 
 typedef struct ScopeRec {
-    unsigned numVars;
     Variable variables;
     struct ScopeRec* next;
 } ScopeRec;

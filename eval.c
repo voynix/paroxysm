@@ -29,7 +29,6 @@ void free_variable(Variable* variable){
 Scope make_scope(Scope next){
     Scope retVal = (Scope) malloc(sizeof(ScopeRec));
     assert(retVal != NULL);
-    retVal->numVars = 0;
     retVal->variables = NULL;
     retVal->next = next;
     return retVal;
@@ -37,17 +36,16 @@ Scope make_scope(Scope next){
 
 /*
  * Frees a Scope, including all of its VariableRecs
+ * Note that (*scope)->variables MUST be NULL-terminated
+ * or free_scope will run off the end of the list
  */
 void free_scope(Scope* scope){
     Variable nextVar;
-    while((*scope)->numVars > 0){
-        assert((*scope)->variables != NULL);
+    while((*scope)->variables != NULL){
         nextVar = (*scope)->variables->next;
         free((*scope)->variables);
         (*scope)->variables = nextVar;
-        (*scope)->numVars--;
     }
-    assert((*scope)->variables == NULL);
     free(*scope);
     *scope = NULL;
 }

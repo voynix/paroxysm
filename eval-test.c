@@ -32,7 +32,6 @@ void test_make_scope(){
     Scope testScope = make_scope(NULL);
     
     assert(testScope != NULL);
-    assert(testScope->numVars == 0);
     assert(testScope->variables == NULL);
     assert(testScope->next == NULL);
 }
@@ -46,14 +45,12 @@ void test_free_scope(){
     testScope->variables = make_variable(INITIAL_NAME + 1, 1, testScope->variables);
     testScope->variables = make_variable(INITIAL_NAME + 2, 2, testScope->variables);
     testScope->variables = make_variable(INITIAL_NAME + 3, 3, testScope->variables);
-    testScope->numVars = 4;
-    // TODO: rewrite this to use create_variable() once that's been written?
     
     free_scope(&testScope);
     
     assert(testScope == NULL);
     // we can't really confirm that all the variables were deleted
-    // but the asserts in free_scope() should mostly cover this
+    // but this is the best we can do, so *shrug*
 }
 
 /* END TEST DECLARATIONS */
