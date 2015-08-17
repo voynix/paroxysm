@@ -29,5 +29,8 @@ clean:
 loc:
 	wc -l *.c *.h
 
+realloc:
+	wc -l $(SRCS)
+
 include Makefile.dep
 
