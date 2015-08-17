@@ -22,11 +22,20 @@ typedef struct PathRec {
 } PathRec;
 typedef struct PathRec* Path;
 
+// for the stack of active scopes
 typedef struct ScopeRec {
     Variable variables;
     struct ScopeRec* next;
 } ScopeRec;
 typedef struct ScopeRec* Scope;
+
+// for the list of all scopes
+typedef struct ScopeRecRec {
+    LineType line;
+    Scope scope;
+    struct ScopeRecRec* next;
+} ScopeRecRec;
+typedef struct ScopeRecRec* SScope;
 
 Variable make_variable(NameType name, ValueType value, Variable next);
 void free_variable(Variable* variable);
@@ -36,6 +45,9 @@ void free_path(Path* path);
 
 Scope make_scope(Scope next);
 void free_scope(Scope* scope);
+
+SScope make_sscope(LineType line, Scope scope, SScope next);
+void free_sscope(SScope* sscope);
 
 void create_variable(Scope scope, NameType name, ValueType value);
 void set_variable(Scope scope, NameType name, ValueType value);

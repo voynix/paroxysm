@@ -77,6 +77,34 @@ void test_free_scope(){
     // but this is the best we can do, so *shrug*
 }
 
+/* make_sscope() */
+
+void test_make_sscope(){
+    TEST_GROUP_INDICATOR("make_sscope()")
+    Scope scope = make_scope(NULL);
+    
+    SScope testSScope = make_sscope(1, scope, NULL);
+    
+    assert(testSScope != NULL);
+    assert(testSScope->line == 1);
+    assert(testSScope->scope == scope);
+    assert(testSScope->next == NULL);
+}
+
+/* free_sscope() */
+
+void test_free_sscope(){
+    TEST_GROUP_INDICATOR("free_sscope()")
+    Scope scope = make_scope(NULL);
+    SScope testSScope = make_sscope(1, scope, NULL);
+    
+    free_sscope(&testSScope);
+    
+    assert(testSScope == NULL);
+    // we can't really confirm that the inner scope got deleted
+    // but this is the best we can do, so *shrug*
+}
+
 /* create_variable() */
 
 void test_create_variable_variable_exists(){
@@ -393,6 +421,8 @@ void run_evaluator_tests(){
     test_free_path();
     test_make_scope();
     test_free_scope();
+    test_make_sscope();
+    test_free_sscope();
     run_create_variable_tests();
     test_set_variable();
     test_get_variable();

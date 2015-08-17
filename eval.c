@@ -62,6 +62,7 @@ Scope make_scope(Scope next){
  * or free_scope will run off the end of the list
  */
 void free_scope(Scope* scope){
+    assert(*scope != NULL);
     Variable nextVar;
     while((*scope)->variables != NULL){
         nextVar = (*scope)->variables->next;
@@ -70,6 +71,29 @@ void free_scope(Scope* scope){
     }
     free(*scope);
     *scope = NULL;
+}
+
+/*
+ * Creates a new ScopeRecRec with the given values
+ * Returns the created ScopeRecRec
+ */
+SScope make_sscope(LineType line, Scope scope, SScope next){
+    SScope retVal = (SScope) malloc(sizeof(SScope));
+    assert(retVal != NULL);
+    retVal->line = line;
+    retVal->scope = scope;
+    retVal->next = next;
+    return retVal;
+}
+
+/*
+ * Frees a SScope and its internal Scope
+ */
+void free_sscope(SScope* sscope){
+    assert(*sscope != NULL);
+    free_scope(&(*sscope)->scope);
+    free(*sscope);
+    *sscope = NULL;
 }
 
 /*
