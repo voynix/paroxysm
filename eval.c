@@ -130,3 +130,40 @@ void delete_variable(Scope scope, NameType name){
     // we didn't find the variable to delete, so something went wrong
     assert(0); // TODO: proper error handling
 }
+
+/*
+ * Push the given scope onto the stack of active scopes
+ */
+void push_scope_stack(Scope* stack, Scope scope){
+    assert(scope != NULL);
+    
+    scope->next = (*stack);
+    if(scope->variables == NULL)
+        scope->variables = ((*stack) != NULL ? (*stack)->variables : NULL);
+    else {
+        Variable var = scope->variables;
+        while(var->next != NULL)
+            var = var->next;
+        var->next = ((*stack) != NULL ? (*stack)->variables : NULL);
+    }
+    
+    (*stack) = scope;
+}
+
+/*
+ * Pop the top scope off the stack of active scopes
+ */
+void pop_scope_stack(Scope* stack){
+    assert((*stack) != NULL);
+    
+    Scope scope = (*stack);
+    if(scope->variables != NULL){
+        Variable var = scope->variables;
+        while(var->next != (scope->next != NULL ? scope->next->variables : NULL))
+            var = var->next;
+        var->next = NULL;
+    }
+    
+    (*stack) = scope->next;
+    scope->next = NULL;
+}

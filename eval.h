@@ -25,9 +25,14 @@ void free_variable(Variable* variable);
 
 Scope make_scope(Scope next);
 void free_scope(Scope* scope);
+
 void create_variable(Scope scope, NameType name, ValueType value);
 void set_variable(Scope scope, NameType name, ValueType value);
 ValueType get_variable(Scope scopeList, NameType name);
 void delete_variable(Scope scope, NameType name);
+
+void push_scope_stack(Scope* stack, Scope scope);
+void pop_scope_stack(Scope* stack);
+
 
 #endif

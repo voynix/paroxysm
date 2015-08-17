@@ -214,6 +214,137 @@ void run_delete_variable_tests(){
     test_delete_variable_multiple_scopes();
 }
 
+/* push_scope_stack() */
+
+void test_push_scope_stack_empty_scope_empty_stack(){
+    Scope scope = make_scope(NULL);
+    Scope stack = NULL;
+    
+    push_scope_stack(&stack, scope);
+    
+    assert(stack == scope);
+    assert(stack->variables == NULL);
+    assert(stack->next == NULL);
+}
+
+void test_push_scope_stack_empty_scope_stack(){
+    Scope scopeA = make_scope(NULL);
+    Scope scopeB = make_scope(NULL);
+    Scope stack = scopeB;
+    Variable v = make_variable(INITIAL_NAME, 12, NULL);
+    stack->variables = v;
+    
+    push_scope_stack(&stack, scopeA);
+    
+    assert(stack == scopeA);
+    assert(stack->variables == v);
+    assert(stack->next == scopeB);
+    assert(stack->next->variables == v);
+    assert(stack->next->next == NULL);
+}
+
+void test_push_scope_stack_scope_empty_stack(){
+    Scope scope = make_scope(NULL);
+    Variable v = make_variable(INITIAL_NAME, -8, NULL);
+    scope->variables = v;
+    Variable w = make_variable(INITIAL_NAME + 1, 8, scope->variables);
+    scope->variables = w;
+    Scope stack = NULL;
+    
+    push_scope_stack(&stack, scope);
+    
+    assert(stack == scope);
+    assert(stack->variables == w);
+    assert(stack->variables->next == v);
+    assert(stack->variables->next->next == NULL);
+    assert(stack->next == NULL);
+}
+
+void test_push_scope_stack_scope_stack(){
+    Scope scope = make_scope(NULL);
+    Variable v = make_variable(INITIAL_NAME, -8, NULL);
+    scope->variables = v;
+    Variable w = make_variable(INITIAL_NAME + 1, 8, scope->variables);
+    scope->variables = w;
+    Scope stack = make_scope(NULL);
+    Scope s = stack;
+    Variable u = make_variable(INITIAL_NAME + 2, 0, NULL);
+    stack->variables = u;
+
+    push_scope_stack(&stack, scope);
+    
+    assert(stack == scope);
+    assert(stack->variables == w);
+    assert(stack->variables->next == v);
+    assert(stack->variables->next->next == u);
+    assert(stack->next == s);
+    assert(stack->next->variables == u);
+    assert(stack->next->variables->next == NULL);
+    assert(stack->next->next == NULL);
+}
+
+void run_push_scope_stack_tests(){
+    TEST_GROUP_INDICATOR("push_scope_stack()")
+    
+    test_push_scope_stack_empty_scope_empty_stack();
+    test_push_scope_stack_empty_scope_stack();
+    test_push_scope_stack_scope_empty_stack();
+    test_push_scope_stack_scope_stack();
+}
+
+/* pop_scope_stack() */
+
+void test_pop_scope_stack_empty_scope(){
+    Scope scopeA = make_scope(NULL);
+    Scope scopeB = make_scope(scopeA);
+    Scope stack = scopeB;
+    
+    pop_scope_stack(&stack);
+    
+    assert(stack == scopeA);
+    assert(scopeB->next == NULL);
+}
+
+void test_pop_scope_stack_scope_empty_stack(){
+    Scope scope = make_scope(NULL);
+    scope->variables = make_variable(INITIAL_NAME, 1, NULL);
+    Scope stack = scope;
+    
+    pop_scope_stack(&stack);
+    
+    assert(stack == NULL);
+    assert(scope->variables != NULL);
+    assert(scope->variables->next == NULL);
+    assert(scope->next == NULL);
+}
+
+void test_pop_scope_stack_scope_stack(){
+    Scope scopeA = make_scope(NULL);
+    Scope scopeB = make_scope(scopeA);
+    scopeA->variables = make_variable(INITIAL_NAME, 0, NULL);
+    scopeB->variables = make_variable(INITIAL_NAME + 1, 1, NULL);
+    Scope stack = scopeA;
+    push_scope_stack(&stack, scopeB);
+    
+    pop_scope_stack(&stack);
+    
+    assert(stack == scopeA);
+    assert(scopeA->variables != NULL);
+    assert(scopeA->variables->next == NULL);
+    assert(scopeA->next == NULL);
+    assert(scopeB->variables != NULL);
+    assert(scopeB->variables->next == NULL);
+    assert(scopeB->next == NULL);
+}
+
+void run_pop_scope_stack_tests(){
+    TEST_GROUP_INDICATOR("pop_scope_stack()")
+    
+    test_pop_scope_stack_empty_scope();
+    test_pop_scope_stack_scope_empty_stack();
+    test_pop_scope_stack_scope_stack();
+}
+
 /* END TEST DECLARATIONS */
 
 void run_evaluator_tests(){
@@ -227,6 +358,8 @@ void run_evaluator_tests(){
     test_set_variable();
     test_get_variable();
     run_delete_variable_tests();
+    run_push_scope_stack_tests();
+    run_pop_scope_stack_tests();
     
     TEST_FILE_END_INDICATOR("evaluator")
 }
