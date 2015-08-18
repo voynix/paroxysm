@@ -5,6 +5,9 @@
 #include <assert.h>
 #include "lex.h"
 
+#define EVAL_LEFT evaluate_AST(tokens->left, line, scopeStack, pathList, scopeList, nextLine)
+#define EVAL_RIGHT evaluate_AST(tokens->right, line, scopeStack, pathList, scopeList, nextLine)
+
 typedef LiteralType ValueType;
 typedef unsigned LineType;
 
@@ -56,8 +59,12 @@ void delete_variable(Scope scope, NameType name);
 
 LineType get_path(Path pathList, NameType name);
 
+Scope get_scope(SScope scopeList, LineType line);
+
 void push_scope_stack(Scope* stack, Scope scope);
 void pop_scope_stack(Scope* stack);
 
+void preevaluate_AST(Token tokens, LineType line, Path* pathList, SScope* scopeList);
+ValueType evaluate_AST(Token tokens, LineType line, Scope* scopeStack, Path pathList, SScope scopeList, LineType* nextLine);
 
 #endif

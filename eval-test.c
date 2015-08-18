@@ -269,7 +269,7 @@ void run_delete_variable_tests(){
 /* get_path() */
 
 void test_get_path(){
-    TEST_GROUP_INDICATOR("get_path")
+    TEST_GROUP_INDICATOR("get_path()")
     Path pathList = make_path(INITIAL_NAME, 0, NULL);
     pathList = make_path(INITIAL_NAME + 1, 1, pathList);
     pathList = make_path(INITIAL_NAME + 2, 2, pathList);
@@ -277,6 +277,20 @@ void test_get_path(){
     pathList = make_path(INITIAL_NAME + 4, 4, pathList);
     
     assert(get_path(pathList, INITIAL_NAME + 3) == 3);
+}
+
+/* get_scope() */
+
+void test_get_scope(){
+    TEST_GROUP_INDICATOR("get_scope()")
+    Scope scope = make_scope(NULL);
+    SScope scopeList = make_sscope(0, make_scope(NULL), NULL);
+    scopeList = make_sscope(1, scope, scopeList);
+    scopeList = make_sscope(2, make_scope(NULL), scopeList);
+    scopeList = make_sscope(3, make_scope(NULL), scopeList);
+    scopeList = make_sscope(4, make_scope(NULL), scopeList);
+    
+    assert(get_scope(scopeList, 1) == scope);
 }
 
 /* push_scope_stack() */
@@ -410,6 +424,44 @@ void run_pop_scope_stack_tests(){
     test_pop_scope_stack_scope_stack();
 }
 
+/* preevaluate_AST() */
+
+void test_preevaluate_AST_path(){
+    Path pathList = NULL;
+    SScope scopeList = NULL;
+    Token tokens = make_builtin_token(PATH, NULL);
+    tokens->left = make_name_token(INITIAL_NAME, NULL);
+    
+    preevaluate_AST(tokens, 12, &pathList, &scopeList);
+    
+    assert(pathList != NULL);
+    assert(pathList->name == INITIAL_NAME);
+    assert(pathList->line == 12);
+    assert(pathList->next == NULL);
+    assert(scopeList == NULL);
+}
+
+void test_preevaluate_AST_scope(){
+    Path pathList = NULL;
+    SScope scopeList = NULL;
+    Token tokens = make_builtin_token(EXPAND, NULL);
+    
+    preevaluate_AST(tokens, 12, &pathList, &scopeList);
+    
+    assert(pathList == NULL);
+    assert(scopeList != NULL);
+    assert(scopeList->line == 12);
+    assert(scopeList->scope != NULL);
+    assert(scopeList->next == NULL);
+}
+
+void run_preevaluate_AST_tests(){
+    TEST_GROUP_INDICATOR("preevaluate_AST()")
+    
+    test_preevaluate_AST_path();
+    test_preevaluate_AST_scope();
+}
+
 /* END TEST DECLARATIONS */
 
 void run_evaluator_tests(){
@@ -428,8 +480,10 @@ void run_evaluator_tests(){
     test_get_variable();
     run_delete_variable_tests();
     test_get_path();
+    test_get_scope();
     run_push_scope_stack_tests();
     run_pop_scope_stack_tests();
+    run_preevaluate_AST_tests();
     
     TEST_FILE_END_INDICATOR("evaluator")
 }

@@ -1,5 +1,8 @@
 #include "eval.h"
 
+const ValueType DEFAULT_AST_VALUE = 23; // !SIRE LIAH
+const ValueType DEFAULT_VARIABLE_VALUE = 0;
+
 /*
  * Creates a new VariableRec with the given values
  * Returns the created VariableRec
@@ -78,7 +81,7 @@ void free_scope(Scope* scope){
  * Returns the created ScopeRecRec
  */
 SScope make_sscope(LineType line, Scope scope, SScope next){
-    SScope retVal = (SScope) malloc(sizeof(SScope));
+    SScope retVal = (SScope) malloc(sizeof(ScopeRecRec));
     assert(retVal != NULL);
     retVal->line = line;
     retVal->scope = scope;
@@ -194,6 +197,22 @@ LineType get_path(Path pathList, NameType name){
 }
 
 /*
+ * Returns the scope for a given line
+ */
+Scope get_scope(SScope scopeList, LineType line){
+    assert(scopeList != NULL);
+    
+    while(scopeList != NULL){
+        if(scopeList->line == line)
+            return scopeList->scope;
+        scopeList = scopeList->next;
+    }
+    
+    // we didn't find the scope, so something went horribly wrong
+    assert(0); // TODO: proper error handling; this shouldn't happen
+}
+
+/*
  * Push the given scope onto the stack of active scopes
  */
 void push_scope_stack(Scope* stack, Scope scope){
@@ -228,4 +247,98 @@ void pop_scope_stack(Scope* stack){
     
     (*stack) = scope->next;
     scope->next = NULL;
+}
+
+/*
+ * If the AST declares a path (PATH) or a scope (EXPAND)
+ * create the appropriate record
+ */
+void preevaluate_AST(Token tokens, LineType line, Path* pathList, SScope* scopeList){
+    if(tokens == NULL)
+        return;
+    
+    // we are guaranteed by create_AST that the AST
+    // has a builtin as its head and that it is
+    // well-formed for the given builtin
+    if(tokens->builtin == PATH) // make a path
+        *pathList = make_path(tokens->left->name, line, *pathList);
+    else if(tokens->builtin == EXPAND) // make a scope
+        *scopeList = make_sscope(line, make_scope(NULL), *scopeList);
+    // for all other builtins we don't need to do anything
+}
+
+/*
+ * Recursively evaluate the given AST in the given context
+ * If a BIFURC occured, sets nextLine to indicate the jump target
+ * Returns the value of the AST
+ */
+ValueType evaluate_AST(Token tokens, LineType line, Scope* scopeStack, Path pathList, SScope scopeList, LineType* nextLine){
+    if(tokens == NULL)
+        return DEFAULT_AST_VALUE;
+    
+    // we are guaranteed by create_AST that the AST
+    // is well-formed, so we will NOT be syntax-checking
+    
+    // base cases
+    if(tokens->type == LITERAL)
+        return tokens->literal;
+    if(tokens->type == NAME)
+        return get_variable(*scopeStack, tokens->name);
+    // non-base cases
+    switch(tokens->builtin){
+        case EXPAND:
+            push_scope_stack(scopeStack, get_scope(scopeList, line));
+            return DEFAULT_AST_VALUE;
+        case COLLAPSE:
+            pop_scope_stack(scopeStack);
+            return DEFAULT_AST_VALUE;
+        case INIT:
+            create_variable(*scopeStack, tokens->left->name, DEFAULT_VARIABLE_VALUE);
+            return DEFAULT_AST_VALUE;
+        case TERM:
+            delete_variable(*scopeStack, tokens->left->name);
+            return DEFAULT_AST_VALUE;
+        case SET:
+            set_variable(*scopeStack, tokens->left->name, EVAL_RIGHT);
+            return DEFAULT_AST_VALUE;
+        case BIFURC:
+            *nextLine = (EVAL_LEFT ? get_path(pathList, tokens->right->left->name) : get_path(pathList, tokens->right->right->name));
+            break;
+        case OUTN:
+            //TODO
+            break;
+        case OUTC:
+            //TODO
+            break;
+        // do we want to be helpful here and return 0xffffffff for true, so NEG works better?
+        case AND:
+            return EVAL_LEFT && EVAL_RIGHT;
+        case OR:
+            return EVAL_LEFT || EVAL_RIGHT;
+        case ADD:
+            return EVAL_LEFT + EVAL_RIGHT;
+        case SUBTRACT:
+            return EVAL_LEFT - EVAL_RIGHT;
+        case MULTIPLY:
+            return EVAL_LEFT * EVAL_RIGHT;
+        case DIVIDE:
+            return EVAL_LEFT / EVAL_RIGHT;
+        case L_SHIFT:
+            return EVAL_LEFT << EVAL_RIGHT;
+        case R_SHIFT:
+            return EVAL_LEFT >> EVAL_RIGHT;
+        case LESS_THAN:
+            return EVAL_LEFT < EVAL_RIGHT;
+        case GREATER_THAN:
+            return EVAL_LEFT > EVAL_RIGHT;
+        case BIT_AND:
+            return EVAL_LEFT & EVAL_RIGHT;
+        case BIT_OR:
+            return EVAL_LEFT | EVAL_RIGHT;
+        case NEG:
+            return ! EVAL_LEFT;
+        default:
+            // ie PATH; L_PAREN and R_PAREN are stripped by create_AST
+            return DEFAULT_AST_VALUE;
+    }
 }
