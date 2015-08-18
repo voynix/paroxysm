@@ -2,6 +2,7 @@
 
 const ValueType DEFAULT_AST_VALUE = 23; // !SIRE LIAH
 const ValueType DEFAULT_VARIABLE_VALUE = 0;
+const ValueType MAX_PRINTABLE_CHAR = 128; // basic ASCII only
 
 /*
  * Creates a new VariableRec with the given values
@@ -303,14 +304,14 @@ ValueType evaluate_AST(Token tokens, LineType line, Scope* scopeStack, Path path
             return DEFAULT_AST_VALUE;
         case BIFURC:
             *nextLine = (EVAL_LEFT ? get_path(pathList, tokens->right->left->name) : get_path(pathList, tokens->right->right->name));
-            break;
+            return DEFAULT_AST_VALUE;
         case OUTN:
-            //TODO
-            break;
+            printf("%i", EVAL_LEFT);
+            return DEFAULT_AST_VALUE;
         case OUTC:
-            //TODO
-            break;
-        // do we want to be helpful here and return 0xffffffff for true, so NEG works better?
+            printf("%c", EVAL_LEFT % MAX_PRINTABLE_CHAR);
+            return DEFAULT_AST_VALUE;
+        // do we want to be helpful here and return 0xffffffff for true for AND and OR, so NEG works better?
         case AND:
             return EVAL_LEFT && EVAL_RIGHT;
         case OR:
@@ -336,9 +337,9 @@ ValueType evaluate_AST(Token tokens, LineType line, Scope* scopeStack, Path path
         case BIT_OR:
             return EVAL_LEFT | EVAL_RIGHT;
         case NEG:
-            return ! EVAL_LEFT;
+            return ~ EVAL_LEFT; // bitwise not
         default:
-            // ie PATH; L_PAREN and R_PAREN are stripped by create_AST
+            // ie PATH; L_PAREN and R_PAREN are stripped by create_AST()
             return DEFAULT_AST_VALUE;
     }
 }
