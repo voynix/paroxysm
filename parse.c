@@ -218,7 +218,7 @@ Token parse_infix_expression(Token tokens){
     while(operatorsLen > 0)
         pop_operator(operators, &operatorsLen, output, &outputLen);
     
-    if(outputLen > 1){ // indicates malformed expression
+    if(outputLen > 1){ // leftover names or literals, so malformed expression
         assert(0); // TODO: proper error handling
     }
     
