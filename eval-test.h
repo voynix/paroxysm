@@ -5,6 +5,7 @@
 #include "eval.h"
 
 extern const unsigned INITIAL_NAME;
+extern const ValueType DEFAULT_AST_VALUE;
 
 void run_evaluator_tests();
 

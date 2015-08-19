@@ -462,6 +462,450 @@ void run_preevaluate_AST_tests(){
     test_preevaluate_AST_scope();
 }
 
+/* evaluate_AST() */
+
+void test_evaluate_AST_literal(){
+    Token tokens = make_literal_token(-17, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == -17);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_name(){
+    Token tokens = make_name_token(INITIAL_NAME, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Scope scopeStack = make_scope(NULL);
+    scopeStack->variables = make_variable(INITIAL_NAME, -17, NULL);
+    
+    assert(evaluate_AST(tokens, line, &scopeStack, NULL, NULL, &nextLine) == -17);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_expand(){
+    Token tokens = make_builtin_token(EXPAND, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Scope scopeStack = NULL;
+    SScope scopeList = make_sscope(10, make_scope(NULL), NULL);
+    
+    assert(evaluate_AST(tokens, line, &scopeStack, NULL, scopeList, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(scopeStack == scopeList->scope);
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_collapse(){
+    Token tokens = make_builtin_token(COLLAPSE, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Scope scopeStack = make_scope(NULL);
+    
+    assert(evaluate_AST(tokens, line, &scopeStack, NULL, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(scopeStack == NULL);
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_init(){
+    Token tokens = make_builtin_token(INIT, NULL);
+    tokens->left = make_name_token(INITIAL_NAME, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Scope scopeStack = make_scope(NULL);
+    
+    assert(evaluate_AST(tokens, line, &scopeStack, NULL, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(scopeStack->variables != NULL);
+    assert(scopeStack->variables->name == INITIAL_NAME);
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_term(){
+    Token tokens = make_builtin_token(TERM, NULL);
+    tokens->left = make_name_token(INITIAL_NAME, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Scope scopeStack = make_scope(NULL);
+    scopeStack->variables = make_variable(INITIAL_NAME, 12, NULL);
+    
+    assert(evaluate_AST(tokens, line, &scopeStack, NULL, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(scopeStack->variables == NULL);
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_set(){
+    Token tokens = make_builtin_token(SET, NULL);
+    tokens->left = make_name_token(INITIAL_NAME, NULL);
+    tokens->right = make_literal_token(270000, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Scope scopeStack = make_scope(NULL);
+    scopeStack->variables = make_variable(INITIAL_NAME, 12, NULL);
+    
+    assert(evaluate_AST(tokens, line, &scopeStack, NULL, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(scopeStack->variables != NULL);
+    assert(scopeStack->variables->name == INITIAL_NAME);
+    assert(scopeStack->variables->value == 270000);
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_bifurc_true(){
+    Token tokens = make_builtin_token(BIFURC, NULL);
+    tokens->left = make_literal_token(14, NULL);
+    tokens->right = make_builtin_token(BIFURC, NULL);
+    tokens->right->left = make_name_token(INITIAL_NAME, NULL);
+    tokens->right->right = make_name_token(INITIAL_NAME + 1, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Path pathList = make_path(INITIAL_NAME, 14, make_path(INITIAL_NAME + 1, 16, NULL));
+    
+    assert(evaluate_AST(tokens, line, NULL, pathList, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(nextLine == 14);
+}
+
+void test_evaluate_AST_bifurc_false(){
+    Token tokens = make_builtin_token(BIFURC, NULL);
+    tokens->left = make_literal_token(0, NULL);
+    tokens->right = make_builtin_token(BIFURC, NULL);
+    tokens->right->left = make_name_token(INITIAL_NAME, NULL);
+    tokens->right->right = make_name_token(INITIAL_NAME + 1, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    Path pathList = make_path(INITIAL_NAME, 14, make_path(INITIAL_NAME + 1, 16, NULL));
+    
+    assert(evaluate_AST(tokens, line, NULL, pathList, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(nextLine == 16);
+}
+
+void test_evaluate_AST_outn(){
+    // TODO: work out how to test STDOUT
+}
+
+void test_evaluate_AST_outc(){
+    // TODO: work out how to test STDOUT
+}
+
+void test_evaluate_AST_and_both_true(){
+    Token tokens = make_builtin_token(AND, NULL);
+    tokens->left = make_literal_token(14, NULL);
+    tokens->right = make_literal_token(11, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_and_first_true(){
+    Token tokens = make_builtin_token(AND, NULL);
+    tokens->left = make_literal_token(14, NULL);
+    tokens->right = make_literal_token(0, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(!evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_and_second_true(){
+    Token tokens = make_builtin_token(AND, NULL);
+    tokens->left = make_literal_token(0, NULL);
+    tokens->right = make_literal_token(11, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(!evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_and_neither_true(){
+    Token tokens = make_builtin_token(AND, NULL);
+    tokens->left = make_literal_token(0, NULL);
+    tokens->right = make_literal_token(0, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(!evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_or_both_true(){
+    Token tokens = make_builtin_token(OR, NULL);
+    tokens->left = make_literal_token(14, NULL);
+    tokens->right = make_literal_token(11, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_or_first_true(){
+    Token tokens = make_builtin_token(OR, NULL);
+    tokens->left = make_literal_token(14, NULL);
+    tokens->right = make_literal_token(0, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_or_second_true(){
+    Token tokens = make_builtin_token(OR, NULL);
+    tokens->left = make_literal_token(0, NULL);
+    tokens->right = make_literal_token(11, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_or_neither_true(){
+    Token tokens = make_builtin_token(OR, NULL);
+    tokens->left = make_literal_token(0, NULL);
+    tokens->right = make_literal_token(0, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(!evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_add(){
+    Token tokens = make_builtin_token(ADD, NULL);
+    tokens->left = make_literal_token(-10, NULL);
+    tokens->right = make_literal_token(400, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == 390);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_subtract(){
+    Token tokens = make_builtin_token(SUBTRACT, NULL);
+    tokens->left = make_literal_token(70000, NULL);
+    tokens->right = make_literal_token(400, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == 69600);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_multiply(){
+    Token tokens = make_builtin_token(MULTIPLY, NULL);
+    tokens->left = make_literal_token(400, NULL);
+    tokens->right = make_literal_token(-2, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == -800);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_divide(){
+    Token tokens = make_builtin_token(DIVIDE, NULL);
+    tokens->left = make_literal_token(27, NULL);
+    tokens->right = make_literal_token(9, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == 3);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_l_shift(){
+    Token tokens = make_builtin_token(L_SHIFT, NULL);
+    tokens->left = make_literal_token(10, NULL);
+    tokens->right = make_literal_token(4, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == 10 << 4);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_r_shift(){
+    Token tokens = make_builtin_token(R_SHIFT, NULL);
+    tokens->left = make_literal_token(1000, NULL);
+    tokens->right = make_literal_token(4, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == 1000 >> 4);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_less_than_true(){
+    Token tokens = make_builtin_token(LESS_THAN, NULL);
+    tokens->left = make_literal_token(-20, NULL);
+    tokens->right = make_literal_token(34567, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_less_than_false(){
+    Token tokens = make_builtin_token(LESS_THAN, NULL);
+    tokens->left = make_literal_token(2000000, NULL);
+    tokens->right = make_literal_token(34567, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(!evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_greater_than_true(){
+    Token tokens = make_builtin_token(GREATER_THAN, NULL);
+    tokens->left = make_literal_token(2, NULL);
+    tokens->right = make_literal_token(-1, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_greater_than_false(){
+    Token tokens = make_builtin_token(GREATER_THAN, NULL);
+    tokens->left = make_literal_token(20000, NULL);
+    tokens->right = make_literal_token(34567, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(!evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine));
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_bit_and(){
+    Token tokens = make_builtin_token(BIT_AND, NULL);
+    tokens->left = make_literal_token(10, NULL);
+    tokens->right = make_literal_token(6, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == 2);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_bit_or(){
+    Token tokens = make_builtin_token(BIT_OR, NULL);
+    tokens->left = make_literal_token(10, NULL);
+    tokens->right = make_literal_token(6, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == 14);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_neg(){
+    Token tokens = make_builtin_token(NEG, NULL);
+    tokens->left = make_literal_token(10, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == ~ 10);
+    
+    assert(nextLine == 11);
+}
+
+void test_evaluate_AST_defaults(){
+    Token tokens = make_builtin_token(PATH, NULL);
+    tokens->left = make_name_token(INITIAL_NAME, NULL);
+    LineType line = 10;
+    LineType nextLine = 11;
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(nextLine == 11);
+    
+    tokens = make_builtin_token(L_PAREN, NULL);
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(nextLine == 11);
+    
+    tokens = make_builtin_token(R_PAREN, NULL);
+    
+    assert(evaluate_AST(tokens, line, NULL, NULL, NULL, &nextLine) == DEFAULT_AST_VALUE);
+    
+    assert(nextLine == 11);
+}
+
+void run_evaluate_AST_tests(){
+    TEST_GROUP_INDICATOR("evaluate_AST()")
+    
+    test_evaluate_AST_literal();
+    test_evaluate_AST_name();
+    test_evaluate_AST_expand();
+    test_evaluate_AST_collapse();
+    test_evaluate_AST_init();
+    test_evaluate_AST_term();
+    test_evaluate_AST_set();
+    test_evaluate_AST_bifurc_true();
+    test_evaluate_AST_bifurc_false();
+    test_evaluate_AST_outn();
+    test_evaluate_AST_outc();
+    test_evaluate_AST_and_both_true();
+    test_evaluate_AST_and_first_true();
+    test_evaluate_AST_and_second_true();
+    test_evaluate_AST_and_neither_true();
+    test_evaluate_AST_or_both_true();
+    test_evaluate_AST_or_first_true();
+    test_evaluate_AST_or_second_true();
+    test_evaluate_AST_or_neither_true();
+    test_evaluate_AST_add();
+    test_evaluate_AST_subtract();
+    test_evaluate_AST_multiply();
+    test_evaluate_AST_divide();
+    test_evaluate_AST_l_shift();
+    test_evaluate_AST_r_shift();
+    test_evaluate_AST_less_than_true();
+    test_evaluate_AST_less_than_false();
+    test_evaluate_AST_greater_than_true();
+    test_evaluate_AST_greater_than_false();
+    test_evaluate_AST_bit_and();
+    test_evaluate_AST_bit_or();
+    test_evaluate_AST_neg();
+    test_evaluate_AST_defaults();
+}
+
 /* END TEST DECLARATIONS */
 
 void run_evaluator_tests(){
@@ -484,6 +928,7 @@ void run_evaluator_tests(){
     run_push_scope_stack_tests();
     run_pop_scope_stack_tests();
     run_preevaluate_AST_tests();
+    run_evaluate_AST_tests();
     
     TEST_FILE_END_INDICATOR("evaluator")
 }

@@ -283,6 +283,8 @@ void preevaluate_AST(Token tokens, LineType line, Path* pathList, SScope* scopeL
  * Returns the value of the AST
  */
 ValueType evaluate_AST(Token tokens, LineType line, Scope* scopeStack, Path pathList, SScope scopeList, LineType* nextLine){
+    assert(nextLine != NULL);
+    
     if(tokens == NULL)
         return DEFAULT_AST_VALUE;
     
@@ -320,7 +322,7 @@ ValueType evaluate_AST(Token tokens, LineType line, Scope* scopeStack, Path path
         case OUTC:
             printf("%c", EVAL_LEFT % MAX_PRINTABLE_CHAR);
             return DEFAULT_AST_VALUE;
-        // do we want to be helpful here and return 0xffffffff for true for AND and OR, so NEG works better?
+        // do we want to be helpful here and return 0xffffffff for true, so NEG works better?
         case AND:
             return EVAL_LEFT && EVAL_RIGHT;
         case OR:
