@@ -1,15 +1,18 @@
 CC = clang
-CFLAGS = -Wall -std=c11 -g
-SRCS = lex.c parse.c eval.c
+CFLAGS = -Wall -std=c11
+EXECUTABLE = paroxysm
+TEST_EXECUTABLE = test
+MAIN = main.c
+SRCS = lex.c parse.c eval.c drive.c
 TEST_SRCS = test.c lex-test.c parse-test.c eval-test.c
 OBJS = ${SRCS:.c=.o}
 TEST_OBJS = $(TEST_SRCS:.c=.o)
 
-a.out: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS)
+paroxysm: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(MAIN) -o $(EXECUTABLE)
 
 test: $(OBJS) $(TEST_OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(TEST_OBJS)
+	$(CC) $(CFLAGS) $(OBJS) $(TEST_OBJS) -o $(TEST_EXECUTABLE)
 
 $(OBJS):
 	$(CC) $(CFLAGS) -c $(SRCS)
@@ -24,7 +27,7 @@ Makefile.dep:
 	touch Makefile.dep
 
 clean:
-	rm -f $(OBJS) $(TEST_OBJS) a.out core
+	rm -f $(OBJS) $(TEST_OBJS) $(EXECUTABLE) $(TEST_EXECUTABLE) core
 
 loc:
 	wc -l *.c *.h

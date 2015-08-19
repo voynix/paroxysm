@@ -1,6 +1,11 @@
 # ignore compilation products
+paroxysm
+test
 a.out
 *.o
+
+# ignore paroxysm files
+*.pxy
 
 # ignore makefile byproducts
 Makefile.dep
