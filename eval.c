@@ -2,7 +2,7 @@
 
 const ValueType DEFAULT_AST_VALUE = 23; // !SIRE LIAH
 const ValueType DEFAULT_VARIABLE_VALUE = 0;
-const ValueType MAX_PRINTABLE_CHAR = 128; // basic ASCII only
+const ValueType MAX_PRINTABLE_CHAR = 128; // 7-bit ASCII only
 
 /*
  * Creates a new VariableRec with the given values
@@ -215,9 +215,18 @@ Scope get_scope(SScope scopeList, LineType line){
 
 /*
  * Push the given scope onto the stack of active scopes
+ * If the given scope is already on the stack, do nothing
  */
 void push_scope_stack(Scope* stack, Scope scope){
     assert(scope != NULL);
+    
+    // check if the new scope's already on the stack
+    Scope test = *stack;
+    while(test != NULL){
+        if(test == scope)
+            return;
+        test = test->next;
+    }
     
     scope->next = (*stack);
     if(scope->variables == NULL)

@@ -147,7 +147,7 @@ int get_token_end(char* input, int start_pos){
     
     int pos = start_pos;
     while((input[pos] != COMMENT_CHAR) && (pos < input_len)){
-        if((input[pos] == ' ') || (input[pos] == '\t'))
+        if((input[pos] == ' ') || (input[pos] == '\t') || (input[pos] == '\n'))
             return pos;
         pos++;
     }
@@ -167,7 +167,7 @@ int get_token_start(char* input, int start_pos){
     
     int pos = start_pos;
     while((input[pos] != COMMENT_CHAR) && (pos < input_len)){
-        if((input[pos] != ' ') && (input[pos] != '\t'))
+        if((input[pos] != ' ') && (input[pos] != '\t') && (input[pos] != '\n'))
             return pos;
         pos++;
     }
@@ -209,7 +209,7 @@ void tokenize_string(char* input, Token* tokens, Name* names){
         // first check is to disambugate negative numbers from MINUS
         if((tok_str[0] == '-' && strlen(tok_str) > 1) || (tok_str[0] >= '0' && tok_str[0] <= '9')){ // literal
             for(char* c = tok_str + 1; *c != '\0'; c++)
-                if(*c <= '0' || *c >= '9')
+                if(*c < '0' || *c > '9')
                     assert(0); // TODO: actual error handling
             newToken = make_literal_token(atoi(tok_str), lastToken);
         } else {
