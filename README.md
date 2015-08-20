@@ -12,16 +12,15 @@ To be less coy, **paroxysm** is an [esoteric](http://esolangs.org/wiki/esoteric_
     ./paroxysm example.pxy
 
 # Table of Contents
-* Language Definition
-    * Syntax
-    * Variables, Names, and Literals
-    * Truth Values
-    * Infix Operators
-    * Scopes
-    * Flow Control
-    * Comments
-* Misc Notes
-* Formal Specification
+* [Language Definition](#language-definition)
+    * [Syntax](#syntax)
+    * [Variables, Names, and Literals](#variables-names-and-literals)
+    * [Truth Values](#truth-values)
+    * [Infix Operators](#infix-operators)
+    * [Scopes](#scopes)
+    * [Flow Control](#flow-control)
+* [Misc Notes](#misc-notes)
+* [Formal Specification](#formal-specification)
 
 # Language Description
 ### Syntax
@@ -42,9 +41,9 @@ The following operators may start a statement and take the indicated number and 
     outn EXPRESSION
     outc EXPRESSION
 
-These operators are described under [Scopes](#Scopes), [Flow Control](#Flow-Control), and [IO](#IO).
+These operators are described under [Scopes](#scopes), [Flow Control](#flow-control), and [IO](#io).
 ##### Expressions
-An expression is a sequence of infix operators, names, and literals separated by spaces. (See the [formal specification](#Formal-Specification).)
+An expression is a sequence of infix operators, names, and literals separated by spaces. (See the [formal specification](#formal-specification).)
 
 The following operators may be used in expressions and may be given expressions, variables, or literals as arguments:
 
@@ -68,7 +67,7 @@ The following operators may be used in expressions and may be given expressions,
 ###### Parentheses (Enclosing Operator)
 * `()`
 
-These operators are described under [Infix Operators](#Infix-Operators).
+These operators are described under [Infix Operators](#infix-operators).
 
 Note that there are reasonable limits on how many operators and variables or literals may be included in a single expression, so overly large expressions (ie >100 terms) may cause errors.
 
@@ -88,7 +87,7 @@ All variables and literal values in **paroxysm** are 32-bit signed integers. (ie
 ##### Variables
 Variables are referenced by name. **paroxysm** has no higher order data structures (eg, arrays, structs, objects, etc). *nefas sunt*
 
-Operators for creating and manipulating variables are described under [Scopes](#Scopes).
+Operators for creating and manipulating variables are described under [Scopes](#scopes).
 
 ###### Names
 A name is a reasonable length sequence of acceptable characters. Acceptable characters are 'a' - 'z', 'A' - 'Z', '0' - '9', and '_'. (in regex terms, `name ~= /[A-Za-z0-9_]+/`)
@@ -163,7 +162,7 @@ Functions are silly; we don't need them and so **paroxysm** does not include the
 
 `goto` and `if` are nice, but with our recently slashed budget, we can hardly afford both. Hence, **paroxysm** offers exactly one flow-control operator: `bifurc`.
 
-`bifurc` evaluates the given expression and then transfers program flow to one of the two paths named (Recall from [above](#Syntax) that the syntax for `bifurc` is `bifurc EXPRESSION NAME NAME`). If the expression evaluates to true, the first path is taken; if the expression evaluates to false the second path is taken.
+`bifurc` evaluates the given expression and then transfers program flow to one of the two paths named (Recall from [above](#syntax) that the syntax for `bifurc` is `bifurc EXPRESSION NAME NAME`). If the expression evaluates to true, the first path is taken; if the expression evaluates to false the second path is taken.
 
 `path` is used to create paths for `bifurc` to jump to. `path p>` creates a path called `p`; when jumped to, program execution will continue at the line immediately after `path p`. Path names must be unique across a program but may overlap with variable names (ie, a path named `x` will *not* interfere with a variable named `x`).
 
