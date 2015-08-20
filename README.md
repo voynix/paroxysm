@@ -166,17 +166,19 @@ Functions are silly; we don't need them and so **paroxysm** does not include the
 
 `path` is used to create paths for `bifurc` to jump to. `path p>` creates a path called `p`; when jumped to, program execution will continue at the line immediately after `path p`. Path names must be unique across a program but may overlap with variable names (ie, a path named `x` will *not* interfere with a variable named `x`).
 
+`path` statements are evaluated solely at program startup; during program execution `path` statements do nothing. Thus, in the example below, after jumping to `false`, execution will proceed through the `outc`, the declation of path `true`, and then on to `outn`.
+
 The following example demonstrates the use of `bifurc` and `path`.
 
     bifurc x true false
     
     ; if x is 0, the bifurc will jump here
     path false
-    ;; do stuff
+    outc x
     
     ; if x is not 0, the bifurc will jump here
     path true
-    ;; do stuff
+    outn x
      
 ### IO
 ##### Output
