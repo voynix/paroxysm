@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include "error.h"
 #include "lex.h"
 
 #define EVAL_LEFT evaluate_AST(tokens->left, line, scopeStack, pathList, scopeList, nextLine)

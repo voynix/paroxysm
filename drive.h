@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#include "error.h"
 #include "lex.h"
 #include "parse.h"
 #include "eval.h"

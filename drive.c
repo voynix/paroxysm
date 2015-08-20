@@ -3,8 +3,7 @@
 void run_file(char* fileName){
     char* mode = "r";
     FILE *fp = fopen(fileName, mode);
-    if(fp == NULL)
-        assert(0); // TODO: proper error handling
+    ERROR_UNLESS(fp != NULL, "could not open file")
     
     char* line = NULL;
     size_t len = 0;

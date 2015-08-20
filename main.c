@@ -2,7 +2,7 @@
 
 
 int main(int argc, char** argv){
-    assert(argc == 2); // TODO: proper error handling
+    ERROR_UNLESS(argc == 2, "USAGE: paroxysm FILE");
     
     run_file(argv[1]);
     

@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "error.h"
 
 typedef enum {BUILTIN, NAME, LITERAL} TokenType;
 typedef enum {EXPAND, COLLAPSE, INIT, TERM, SET, PATH, BIFURC, OUTN, OUTC, AND, OR, ADD, SUBTRACT, MULTIPLY, DIVIDE, L_SHIFT, R_SHIFT, LESS_THAN, GREATER_THAN, BIT_AND, BIT_OR, NEG, L_PAREN, R_PAREN} BuiltinType;

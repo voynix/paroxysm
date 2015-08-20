@@ -8,30 +8,6 @@ const int EOL = -1;
 
 // for lexing
 const char COMMENT_CHAR = ';';
-//const char* EXPAND_STR = "expand";
-//const char* COLLAPSE_STR = "collapse";
-//const char* INIT_STR = "init";
-//const char* TERM_STR = "term";
-//const char* SET_STR = "set";
-//const char* PATH_STR = "path";
-//const char* BIFURC_STR = "bifurc";
-//const char* OUTN_STR = "outn";
-//const char* OUTC_STR = "outc";
-//const char* AND_STR = "and";
-//const char* OR_STR = "or";
-//const char* PLUS_STR = "+";
-//const char* MINUS_STR = "-";
-//const char* MULTIPLY_STR = "*";
-//const char* DIVIDE_STR = "/";
-//const char* SHIFT_LEFT_STR = "<<";
-//const char* SHIFT_RIGHT_STR = ">>";
-//const char* LESS_THAN_STR = "<";
-//const char* GREATER_THAN_STR = ">";
-//const char* BIT_AND_STR = "&";
-//const char* BIT_OR_STR = "|";
-//const char* NEG_STR = "!";
-//const char* L_PAREN_STR = "(";
-//const char* R_PAREN_STR = ")";
 const int NUM_BUILTINS = 24;
 char* builtin_strs[NUM_BUILTINS] = {"expand", "collapse", "init", "term", "set", "path", "bifurc", "outn",  "outc", "and", "or", "+", "-", "*", "/", "<<", ">>", "<", ">", "&", "|", "!", "(", ")"};
 
@@ -210,10 +186,10 @@ void tokenize_string(char* input, Token* tokens, Name* names){
         if((tok_str[0] == '-' && strlen(tok_str) > 1) || (tok_str[0] >= '0' && tok_str[0] <= '9')){ // literal
             for(char* c = tok_str + 1; *c != '\0'; c++)
                 if(*c < '0' || *c > '9')
-                    assert(0); // TODO: actual error handling
+                    ERROR("invalid characters for value");
             newToken = make_literal_token(atoi(tok_str), lastToken);
-        } else {
-            for(int i = 0; i < NUM_BUILTINS; i++){ // builtin
+        } else { // builtin
+            for(int i = 0; i < NUM_BUILTINS; i++){
                 if(strcmp(builtin_strs[i], tok_str) == 0){
                     newToken = make_builtin_token(i, lastToken);
                     break;
@@ -224,7 +200,7 @@ void tokenize_string(char* input, Token* tokens, Name* names){
             // legal characters are A-Za-z0-9_
             for(char* c = tok_str; *c != '\0'; c++)
                 if(!((*c == '_') || (*c >= '0' && *c <= '9') || (*c >= 'a' && *c <= 'z') || (*c >= 'A' && *c <= 'Z')))
-                    assert(0); // TODO: actual error handling
+                    ERROR("invalid characters for name");
             newToken = make_name_token(add_name(names, tok_str), lastToken);
         }
         

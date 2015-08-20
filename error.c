@@ -1,3 +1,6 @@
 #include "error.h"
 
-#define ERROR(x) printf("%s\n", x); assert(0);
+void error(char* message){
+    printf("ERROR: %s\n", message);
+    exit(1);
+}

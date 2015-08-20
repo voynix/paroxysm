@@ -20,7 +20,7 @@ int get_token_length(Token t){
  * Push a token onto a stack
  */
 void push_token_stack(Token t, Token (*stack)[TOKEN_STACK_SIZE], unsigned* stackLength){
-    assert(*stackLength < TOKEN_STACK_SIZE);
+    ERROR_UNLESS(*stackLength < TOKEN_STACK_SIZE, "parse overflow; too many tokens");
     (*stack)[*stackLength] = t;
     (*stackLength)++;
 }
@@ -143,18 +143,18 @@ void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, 
     assert(op->type == BUILTIN);
     if(get_arity(op->builtin) == 1){
         if(*outputLen < 1){
-            assert(0); // TODO: proper error handling
+            ERROR("insufficient operands (expected 1)");
         }
         op->left = pop_token_stack(output, outputLen);
     } else { // all the other infix ops are binary
         assert(get_arity(op->builtin) == 2);
         if(*outputLen < 2){
-            assert(0); // TODO: proper error handling
+            ERROR("insufficient operands (expected 2)");
         }
         // stack, so fill in operands in reverse order
         op->right = pop_token_stack(output, outputLen);
         op->left = pop_token_stack(output, outputLen);
-        assert(op->right != op->left);
+        assert(op->right != op->left); // guard against horrible bug from the before-times
     }
     push_token_stack(op, output, outputLen);
 }
@@ -184,9 +184,7 @@ Token parse_infix_expression(Token tokens){
             push_token_stack(tokens, output, &outputLen);
         } else { // if it's a builtin, do magic
             // check if it's allowed to be here
-            if(can_start_line(tokens->builtin)){
-                assert(0); // TODO: proper error handling
-            }
+            ERROR_UNLESS(!can_start_line(tokens->builtin), "statement operators not allowed in expressions")
             if(operatorsLen == 0){
                 push_token_stack(tokens, operators, &operatorsLen);
             } else if(tokens->builtin == L_PAREN){
@@ -197,7 +195,7 @@ Token parse_infix_expression(Token tokens){
                 while(operatorsLen > 0 && (*operators)[operatorsLen - 1]->builtin != L_PAREN)
                     pop_operator(operators, &operatorsLen, output, &outputLen);
                 if(operatorsLen == 0){ // there was no L_PAREN, so error
-                    assert(0); // TODO: proper error handling
+                    ERROR("mismatched parentheses")
                 } else {
                     // discard the L_PAREN
                     Token discard = pop_token_stack(operators, &operatorsLen);
@@ -219,9 +217,7 @@ Token parse_infix_expression(Token tokens){
     while(operatorsLen > 0)
         pop_operator(operators, &operatorsLen, output, &outputLen);
     
-    if(outputLen > 1){ // leftover names or literals, so malformed expression
-        assert(0); // TODO: proper error handling
-    }
+    ERROR_UNLESS(outputLen <= 1, "malformed expression") // leftover names or literals, so malformed expression
     
     Token retval = pop_token_stack(output, &outputLen); // if stack was empty, retval <- NULL
     
@@ -239,16 +235,10 @@ Token parse_infix_expression(Token tokens){
 Token create_AST(Token tokens){
     if(tokens == NULL)
         return NULL;
-    if(tokens->type != BUILTIN){
-        assert(0); // TODO: proper error handling
-        // this should be a syntax error of some sort, probably
-    }
-    if(!can_start_line(tokens->builtin)){
-        assert(0); // TODO: proper error handling
-        // this should also be a syntax error
-    }
+    ERROR_UNLESS(tokens->type == BUILTIN, "line must start with operator")
+    ERROR_UNLESS(can_start_line(tokens->builtin), "line must start with statement")
     
-    // now we're assured of having a builtin, so let's grab it
+    // now we're assured of having an acceptable builtin, so let's grab it
     Token output = tokens;
     tokens = tokens->next;
     
@@ -256,10 +246,10 @@ Token create_AST(Token tokens){
     
     // sanity checking
     if(get_arity(output->builtin) == 0 && tokens != NULL){
-        assert(0); // TODO: proper error handling
+        ERROR("too many operands (zero expected)")
         // eg don't follow EXPAND with a value, etc
     } else if(get_arity(output->builtin) > get_token_length(tokens)){
-        assert(0); // TODO: proper error handling
+        ERROR("too few operands given")
         // first check for insufficient operands
     }
     
@@ -274,9 +264,7 @@ Token create_AST(Token tokens){
         case INIT:
         case TERM:
         case PATH:
-            if(tokens->type != NAME){
-                assert(0); // TODO: proper error handling
-            }
+            ERROR_UNLESS(tokens->type == NAME, "name expected")
             output->left = tokens;
             break;
         // one expression
@@ -286,9 +274,7 @@ Token create_AST(Token tokens){
             break;
         // one name followed by one expression
         case SET:
-            if(tokens->type != NAME){
-                assert(0); // TODO: proper error handling
-            }
+            ERROR_UNLESS(tokens->type == NAME, "name expected")
             output->left = tokens;
             output->right = parse_infix_expression(tokens->next);
             break;
@@ -304,7 +290,7 @@ Token create_AST(Token tokens){
             output->right->right = newEnd->next->next;
             // we need to get names
             if(output->right->left->type != NAME || output->right->right->type != NAME){
-                assert(0); // TODO: proper error handling
+                ERROR("name expected")
             }
             // chop the two paths we grabbed off the token stream
             newEnd->next = NULL;

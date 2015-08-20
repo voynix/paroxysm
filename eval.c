@@ -105,7 +105,7 @@ void free_sscope(SScope* sscope){
  * if no Variable by the given name exists already
  */
 void create_variable(Scope scope, NameType name, ValueType value){
-    assert(scope != NULL);
+    ERROR_UNLESS(scope != NULL, "no scope");
     
     Variable v = scope->variables;
     while(v != NULL){
@@ -121,7 +121,7 @@ void create_variable(Scope scope, NameType name, ValueType value){
  * Set the given Variable to the given value, assuming it exists
  */
 void set_variable(Scope scope, NameType name, ValueType value){
-    assert(scope != NULL);
+    ERROR_UNLESS(scope != NULL, "no scope");
     
     Variable v = scope->variables;
     while(v != NULL){
@@ -131,14 +131,14 @@ void set_variable(Scope scope, NameType name, ValueType value){
         }
         v = v->next;
     }
-    assert(0); // TODO: proper error handling
+    ERROR("variable to be set does not exist");
 }
 
 /*
  * Get the value for the given variable, assuming it exists
  */
 ValueType get_variable(Scope scope, NameType name){
-    assert(scope != NULL);
+    ERROR_UNLESS(scope != NULL, "no scope")
     
     Variable v = scope->variables;
     while(v != NULL){
@@ -146,14 +146,14 @@ ValueType get_variable(Scope scope, NameType name){
             return v->value;
         v = v->next;
     }
-    assert(0); // TODO: proper error handling
+    ERROR("variable does not exist")
 }
 
 /*
  * Remove the first instance of the given variable found
  */
 void delete_variable(Scope scope, NameType name){
-    assert(scope != NULL);
+    ERROR_UNLESS(scope != NULL, "no scope")
     
     Variable currentVariable = scope->variables;
     Variable prevVariable = NULL;
@@ -178,14 +178,14 @@ void delete_variable(Scope scope, NameType name){
     }
     
     // we didn't find the variable to delete, so something went wrong
-    assert(0); // TODO: proper error handling
+    ERROR("variable to be deleted does not exist")
 }
 
 /*
  * Returns the line number for the given path
  */
 LineType get_path(Path pathList, NameType name){
-    assert(pathList != NULL);
+    ERROR_UNLESS(pathList != NULL, "no paths declared")
     
     while(pathList != NULL){
         if(pathList->name == name)
@@ -194,7 +194,7 @@ LineType get_path(Path pathList, NameType name){
     }
 
     // we didn't find the path, so something went wrong
-    assert(0); // TODO: proper error handling
+    ERROR("path to follow was not declared")
 }
 
 /*
@@ -210,7 +210,7 @@ Scope get_scope(SScope scopeList, LineType line){
     }
     
     // we didn't find the scope, so something went horribly wrong
-    assert(0); // TODO: proper error handling; this shouldn't happen
+    assert(0); // this shouldn't happen ever
 }
 
 /*
@@ -245,7 +245,7 @@ void push_scope_stack(Scope* stack, Scope scope){
  * Pop the top scope off the stack of active scopes
  */
 void pop_scope_stack(Scope* stack){
-    assert((*stack) != NULL);
+    ERROR_UNLESS((*stack) != NULL, "no scope to collapse");
     
     Scope scope = (*stack);
     if(scope->variables != NULL){

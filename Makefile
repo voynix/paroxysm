@@ -1,9 +1,9 @@
 CC = clang
-CFLAGS = -Wall -std=c11
+CFLAGS = -Wall -Wno-return-type -std=c11
 EXECUTABLE = paroxysm
 TEST_EXECUTABLE = test
 MAIN = main.c
-SRCS = lex.c parse.c eval.c drive.c
+SRCS = lex.c parse.c eval.c drive.c error.c
 TEST_SRCS = test.c lex-test.c parse-test.c eval-test.c
 OBJS = ${SRCS:.c=.o}
 TEST_OBJS = $(TEST_SRCS:.c=.o)
