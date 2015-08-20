@@ -4,8 +4,5 @@ test
 a.out
 *.o
 
-# ignore paroxysm files
-*.pxy
-
 # ignore makefile byproducts
 Makefile.dep

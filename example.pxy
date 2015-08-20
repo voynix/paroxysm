@@ -1,0 +1,20 @@
+; let's print hello world!
+expand
+init h
+init space
+set h 104
+set space 32
+outc h     ; h
+outc h - 3 ; e
+outc h + 4 ; l
+outc h + 4 ; l
+outc h + 7 ; o
+outc 44    ; ,
+outc space ;  
+outc h + 15; w
+outc h + 7 ; o
+outc h + 10; r
+outc h + 4 ; l
+outc h - 4 ; d
+outc 33    ; !
+outc 10    ; \n
