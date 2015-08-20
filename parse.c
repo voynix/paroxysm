@@ -178,6 +178,7 @@ Token parse_infix_expression(Token tokens){
     Token nextToken;
     while(tokens != NULL){
         nextToken = tokens->next;
+        tokens->next = NULL;
         // if it's not a builtin, stick it in output
         if(tokens->type != BUILTIN){
             push_token_stack(tokens, output, &outputLen);
