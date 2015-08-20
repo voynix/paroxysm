@@ -192,7 +192,7 @@ The following example demonstrates the use of `bifurc` and `path`.
 ##### Input
 At present **paroxysm** includes no input operators. An `in` operator is planned for a future release.
 # Misc Notes
-**paroxysm** has no error-recovery or reporting mechanism at present; any errors will cause the program to terminate with assertion failure. More user-friendly error-reporting is planned for a future release.
+**paroxysm** has no error-recovery or reporting mechanism at present; any errors will cause the program to terminate with an assertion failure. More user-friendly error-reporting is planned for a future release.
 
 The preferred extension for **paroxysm** files is `.pxy`.
 # Formal Specification
