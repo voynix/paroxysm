@@ -594,6 +594,10 @@ void test_evaluate_AST_outc(){
     // TODO: work out how to test STDOUT
 }
 
+void test_evaluate_AST_in(){
+    // TODO: work out how to test STDIN
+}
+
 void test_evaluate_AST_and_both_true(){
     Token tokens = make_builtin_token(AND, NULL);
     tokens->left = make_literal_token(14, NULL);
@@ -882,6 +886,7 @@ void run_evaluate_AST_tests(){
     test_evaluate_AST_bifurc_false();
     test_evaluate_AST_outn();
     test_evaluate_AST_outc();
+    test_evaluate_AST_in();
     test_evaluate_AST_and_both_true();
     test_evaluate_AST_and_first_true();
     test_evaluate_AST_and_second_true();

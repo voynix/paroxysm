@@ -8,8 +8,8 @@ const int EOL = -1;
 
 // for lexing
 const char COMMENT_CHAR = ';';
-const int NUM_BUILTINS = 24;
-char* builtin_strs[NUM_BUILTINS] = {"expand", "collapse", "init", "term", "set", "path", "bifurc", "outn",  "outc", "and", "or", "+", "-", "*", "/", "<<", ">>", "<", ">", "&", "|", "!", "(", ")"};
+const int NUM_BUILTINS = 25;
+char* builtin_strs[NUM_BUILTINS] = {"expand", "collapse", "init", "term", "set", "path", "bifurc", "outn",  "outc", "in", "and", "or", "+", "-", "*", "/", "<<", ">>", "<", ">", "&", "|", "!", "(", ")"};
 
 
 /*

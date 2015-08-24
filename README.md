@@ -40,6 +40,7 @@ The following operators may start a statement and take the indicated number and 
     bifurc EXPRESSION NAME NAME
     outn EXPRESSION
     outc EXPRESSION
+    in NAME
 
 These operators are described under [Scopes](#scopes), [Flow Control](#flow-control), and [IO](#io).
 ##### Expressions
@@ -164,7 +165,7 @@ Functions are silly; we don't need them and so **paroxysm** does not include the
 
 `bifurc` evaluates the given expression and then transfers program flow to one of the two paths named (Recall from [above](#syntax) that the syntax for `bifurc` is `bifurc EXPRESSION NAME NAME`). If the expression evaluates to true, the first path is taken; if the expression evaluates to false the second path is taken.
 
-`path` is used to create paths for `bifurc` to jump to. `path p>` creates a path called `p`; when jumped to, program execution will continue at the line immediately after `path p`. Path names must be unique across a program but may overlap with variable names (ie, a path named `x` will *not* interfere with a variable named `x`).
+`path` creates paths for `bifurc` to jump to. `path p` creates a path called `p`; when jumped to, program execution will continue at the line immediately after `path p`. Path names must be unique across a program but may overlap with variable names (ie, a path named `x` will *not* interfere with a variable named `x`).
 
 `path` statements are evaluated solely at program startup; during program execution `path` statements do nothing. Thus, in the example below, after jumping to `false`, execution will proceed through the `outc`, the declation of path `true`, and then on to `outn`.
 
@@ -190,7 +191,12 @@ The following example demonstrates the use of `bifurc` and `path`.
 **paroxysm** does *not* automatically print whitespace or newlines after `outn` or `outc`. 
   
 ##### Input
-At present **paroxysm** includes no input operators. An `in` operator is planned for a future release.
+**paroxysm** includes one input operator: `in`.
+
+`in var` waits for a single character of user input from `STDIN` and stores the value of that character in `var`. If multiple characters are given all beyond the first are ignored.
+
+`in` assumes single-btye characters and so has undefined behavior when given multi-byte charaters. If reading from standard input fails an error will be raised.
+
 # Misc Notes
 
 The preferred extension for **paroxysm** files is `.pxy`.

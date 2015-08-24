@@ -358,6 +358,23 @@ void test_create_AST_PATH(){
     assert(t->left->right == NULL);
 }
 
+void test_create_AST_IN(){
+    Token t = make_builtin_token(IN, NULL);
+    make_name_token(INITIAL_NAME, t);
+    
+    t = create_AST(t);
+    
+    assert(t != NULL);
+    assert(t->type == BUILTIN);
+    assert(t->builtin == IN);
+    assert(t->left != NULL);
+    assert(t->right == NULL);
+    assert(t->left->type == NAME);
+    assert(t->left->name == INITIAL_NAME);
+    assert(t->left->left == NULL);
+    assert(t->left->right == NULL);
+}
+
 void test_create_AST_OUTN(){
     Token t = make_builtin_token(OUTN, NULL);
     make_literal_token(400, t);
@@ -485,6 +502,7 @@ void run_create_AST_tests(){
     test_create_AST_INIT();
     test_create_AST_TERM();
     test_create_AST_PATH();
+    test_create_AST_IN();
     test_create_AST_OUTN();
     test_create_AST_OUTC();
     test_create_AST_SET();

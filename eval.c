@@ -3,6 +3,7 @@
 const ValueType DEFAULT_AST_VALUE = 23; // !SIRE LIAH
 const ValueType DEFAULT_VARIABLE_VALUE = 0;
 const ValueType MAX_PRINTABLE_CHAR = 128; // 7-bit ASCII only
+const ValueType END_OF_INPUT = '\n';
 
 /*
  * Creates a new VariableRec with the given values
@@ -321,6 +322,11 @@ ValueType evaluate_AST(Token tokens, LineType line, Scope* scopeStack, Path path
             return DEFAULT_AST_VALUE;
         case OUTC:
             printf("%c", EVAL_LEFT % MAX_PRINTABLE_CHAR);
+            return DEFAULT_AST_VALUE;
+        case IN:
+            set_variable(*scopeStack, tokens->left->name, getchar());
+            ERROR_UNLESS(get_variable(*scopeStack, tokens->left->name) != EOF, "read failed")
+            while(getchar() != END_OF_INPUT) ; // clear all trailing character through newline from STDIN
             return DEFAULT_AST_VALUE;
         // do we want to be helpful here and return 0xffffffff for true, so NEG works better?
         case AND:

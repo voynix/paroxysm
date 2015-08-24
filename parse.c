@@ -51,6 +51,7 @@ PrecedenceType get_precedence(BuiltinType b){
         case BIFURC:
         case OUTN:
         case OUTC:
+        case IN:
         case L_PAREN:
         case R_PAREN:
             return 0;
@@ -92,6 +93,7 @@ ArityType get_arity(BuiltinType b){
         case PATH:
         case OUTN:
         case OUTC:
+        case IN:
         case NEG:
             return 1;
         case SET:
@@ -128,6 +130,7 @@ int can_start_line(BuiltinType b){
         case BIFURC:
         case OUTN:
         case OUTC:
+        case IN:
             return 1;
         default:
             return 0;
@@ -249,7 +252,7 @@ Token create_AST(Token tokens){
         ERROR("too many operands (zero expected)")
         // eg don't follow EXPAND with a value, etc
     } else if(get_arity(output->builtin) > get_token_length(tokens)){
-        ERROR("too few operands given")
+        ERROR("too few operands")
         // first check for insufficient operands
     }
     
@@ -264,7 +267,9 @@ Token create_AST(Token tokens){
         case INIT:
         case TERM:
         case PATH:
+        case IN:
             ERROR_UNLESS(tokens->type == NAME, "name expected")
+            ERROR_UNLESS(tokens->next == NULL, "too many operands (one expected)")
             output->left = tokens;
             break;
         // one expression
