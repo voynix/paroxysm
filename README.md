@@ -214,6 +214,7 @@ The preferred extension for **paroxysm** files is `.pxy`.
     STATEMENT = bifurc EXPRESSION NAME NAME
     STATEMENT = outn EXPRESSION
     STATEMENT = outc EXPRESSION
+    STATEMENT = in NAME
     
     EXPRESSION = NAME
     EXPRESSION = LITERAL
