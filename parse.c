@@ -1,6 +1,5 @@
 #include "parse.h"
 
-const unsigned short TOKEN_STACK_SIZE = 200;
 const PrecedenceType DEFAULT_PRECEDENCE = 20;
 const ArityType DEFAULT_ARITY = 20;
 

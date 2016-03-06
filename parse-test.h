@@ -6,7 +6,6 @@
 
 extern const unsigned INITIAL_NAME;
 extern const int NUM_BUILTINS;
-extern const unsigned short TOKEN_STACK_SIZE;
 extern const PrecedenceType DEFAULT_PRECEDENCE;
 extern const ArityType DEFAULT_ARITY;
 

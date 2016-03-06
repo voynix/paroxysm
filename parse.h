@@ -8,9 +8,6 @@
 typedef unsigned short PrecedenceType;
 typedef unsigned short ArityType;
 
-// the max number of tokens we can process per line
-const unsigned short TOKEN_STACK_SIZE;
-
 int get_token_length(Token t);
 
 void push_token_stack(Token t, Token* stack, unsigned* stackLength);

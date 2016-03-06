@@ -70,8 +70,6 @@ The following operators may be used in expressions and may be given expressions,
 
 These operators are described under [Infix Operators](#infix-operators).
 
-Note that there are reasonable limits on how many operators and variables or literals may be included in a single expression, so overly large expressions (ie >100 terms) may cause errors.
-
 ##### Comments
 Comments begin with `;` and continue until the end of the line.
 
@@ -107,7 +105,7 @@ A literal is a positive or negative integer expressed in base 10. (eg `10`, `-40
 * `+` integer addition
 * `-` integer subtraction
 * `*` integer multiplication
-* `/` integer division (rounding follow **C**)
+* `/` integer division (rounding behavior follows **C**'s)
 * `<<` bitshift left
 * `>>` bitshift right
 * `<` less than
@@ -151,8 +149,8 @@ Executing `collapse` when the stack is empty is an error.
 The following operators are used to manipulate variables within scopes. Using any of these operators when the stack is empty is an error.
 
 * `init example` creates a variable called `example` in the scope on top of the stack if no variable called `example` exists in any scope on the stack. If `example` already exists in some scope on the stack `init example` does nothing.
-* `set example x + 2 * ( 3 + 4 )` sets the value of the variable called `example` to `x + 2 * ( 3 + 4 )`. If there are multiple variables called `example` in different scopes on the stack the `example` in the highest scope is modified. All other instances are unaffected.
-* `term example` removes the variable called `example` from its scope on the stack. If there are multiple variables called `example` if different scopes on the stack the `example` in the highest scope is modified. All other instances are unaffected.
+* `set example x + 2 * ( 3 + 4 )` sets the value of the variable called `example` to `x + 2 * ( 3 + 4 )`. If there are multiple variables called `example` in different scopes on the stack the `example` in the highest scope is modified. All other instances of `example` are unaffected.
+* `term example` removes the variable called `example` from its scope on the stack. If there are multiple variables called `example` in different scopes on the stack the `example` in the highest scope is removed and all other instances are unaffected.
 
 If there are multiple variables with the same name in different scopes on the stack, any reference to that variable will evaluate to the value of the instance of the variable in the highest scope on the stack.
 
