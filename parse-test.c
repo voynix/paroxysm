@@ -30,32 +30,32 @@ void run_get_token_length_tests(){
 /* {push, pop}_token_stack() */
 
 void test_push_token_stack(){
-    Token (*test)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
+    Token test = NULL;
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
     Token s = make_builtin_token(COLLAPSE, NULL);
     Token r = make_builtin_token(ADD, NULL);
     
-    push_token_stack(t, test, &len);
-    push_token_stack(s, test, &len);
-    push_token_stack(r, test, &len);
+    push_token_stack(t, &test, &len);
+    push_token_stack(s, &test, &len);
+    push_token_stack(r, &test, &len);
     
     assert(len == 3);
-    assert((*test)[0] == t);
-    assert((*test)[1] == s);
-    assert((*test)[2] == r);
+    assert(test == r);
+    assert(test->next == s);
+    assert(test->next->next == t);
 }
 
 void test_pop_token_stack_non_empty(){
-    Token (*test)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
+    Token test = NULL;
     unsigned len = 0;
     Token t = make_builtin_token(EXPAND, NULL);
     Token s = make_builtin_token(EXPAND, NULL);
-    push_token_stack(t, test, &len);
-    push_token_stack(s, test, &len);
+    push_token_stack(t, &test, &len);
+    push_token_stack(s, &test, &len);
     
-    Token x = pop_token_stack(test, &len);
-    Token y = pop_token_stack(test, &len);
+    Token x = pop_token_stack(&test, &len);
+    Token y = pop_token_stack(&test, &len);
     
     assert(len == 0);
     assert(x == s);
@@ -63,10 +63,10 @@ void test_pop_token_stack_non_empty(){
 }
 
 void test_pop_token_stack_empty(){
-    Token (*test)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
+    Token test = NULL;
     unsigned len = 0;
     
-    Token x = pop_token_stack(test, &len);
+    Token x = pop_token_stack(&test, &len);
     
     assert(len == 0);
     assert(x == NULL);
@@ -111,18 +111,19 @@ void test_pop_operator_unary_operators(){
             continue;
         if(get_arity(i) != 1)
             continue;
-        Token (*operators)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
-        Token (*output)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
+        
+        Token operators = NULL;
+        Token output = NULL;
         unsigned operatorsLen = 0;
         unsigned outputLen = 0;
-        push_token_stack(make_builtin_token(i, NULL), operators, &operatorsLen);
-        push_token_stack(make_literal_token(2 << 30, NULL), output, &outputLen);
+        push_token_stack(make_builtin_token(i, NULL), &operators, &operatorsLen);
+        push_token_stack(make_literal_token(2 << 30, NULL), &output, &outputLen);
         
-        pop_operator(operators, &operatorsLen, output, &outputLen);
+        pop_operator(&operators, &operatorsLen, &output, &outputLen);
         
         assert(operatorsLen == 0);
         assert(outputLen == 1);
-        Token tokens = pop_token_stack(output, &outputLen);
+        Token tokens = pop_token_stack(&output, &outputLen);
         assert(tokens != NULL);
         assert(tokens->type == BUILTIN);
         assert(tokens->builtin == i);
@@ -141,19 +142,20 @@ void test_pop_operator_binary_operators(){
             continue;
         if(get_arity(i) != 2)
             continue;
-        Token (*operators)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
-        Token (*output)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
+        
+        Token operators = NULL;
+        Token output = NULL;
         unsigned operatorsLen = 0;
         unsigned outputLen = 0;
-        push_token_stack(make_builtin_token(i, NULL), operators, &operatorsLen);
-        push_token_stack(make_literal_token(12, NULL), output, &outputLen);
-        push_token_stack(make_literal_token(-13, NULL), output, &outputLen);
+        push_token_stack(make_builtin_token(i, NULL), &operators, &operatorsLen);
+        push_token_stack(make_literal_token(12, NULL), &output, &outputLen);
+        push_token_stack(make_literal_token(-13, NULL), &output, &outputLen);
         
-        pop_operator(operators, &operatorsLen, output, &outputLen);
+        pop_operator(&operators, &operatorsLen, &output, &outputLen);
         
         assert(operatorsLen == 0);
         assert(outputLen == 1);
-        Token tokens = pop_token_stack(output, &outputLen);
+        Token tokens = pop_token_stack(&output, &outputLen);
         assert(tokens != NULL);
         assert(tokens->type == BUILTIN);
         assert(tokens->builtin == i);

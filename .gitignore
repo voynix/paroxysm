@@ -6,3 +6,6 @@ a.out
 
 # ignore makefile byproducts
 Makefile.dep
+
+# ignore scratch file
+language.txt

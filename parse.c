@@ -19,20 +19,22 @@ int get_token_length(Token t){
 /*
  * Push a token onto a stack
  */
-void push_token_stack(Token t, Token (*stack)[TOKEN_STACK_SIZE], unsigned* stackLength){
-    ERROR_UNLESS(*stackLength < TOKEN_STACK_SIZE, "parse overflow; too many tokens");
-    (*stack)[*stackLength] = t;
+void push_token_stack(Token t, Token* stack, unsigned* stackLength){
+    t->next = *stack;
+    (*stack) = t;
     (*stackLength)++;
 }
 
 /*
  * Pop a token off a stack
  */
-Token pop_token_stack(Token (*stack)[TOKEN_STACK_SIZE], unsigned* stackLength){
+Token pop_token_stack(Token* stack, unsigned* stackLength){
     if(*stackLength == 0)
         return NULL;
+    Token retval = *stack;
+    *stack = (*stack)->next;
     (*stackLength)--;
-    return (*stack)[*stackLength];
+    return retval;
 }
 
 /*
@@ -141,7 +143,7 @@ int can_start_line(BuiltinType b){
  * Takes the top operator off of operators, grabs operands from output
  * and puts the new tree on output
  */
-void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, Token (*output)[TOKEN_STACK_SIZE], unsigned* outputLen){
+void pop_operator(Token* operators, unsigned* operatorsLen, Token* output, unsigned* outputLen){
     Token op = pop_token_stack(operators, operatorsLen);
     assert(op->type == BUILTIN);
     if(get_arity(op->builtin) == 1){
@@ -162,20 +164,17 @@ void pop_operator(Token (*operators)[TOKEN_STACK_SIZE], unsigned* operatorsLen, 
     push_token_stack(op, output, outputLen);
 }
 
+
 /*
  * Parse an infix expression from a token stream
  * Returns a parse tree
  * See https://en.wikipedia.org/wiki/Shunting-yard_algorithm
  */
 Token parse_infix_expression(Token tokens){
-    // see http://stackoverflow.com/questions/1810083/c-pointers-pointing-to-an-array-of-fixed-size
-    // for explanation of this type signature
-    Token (*operators)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
-    assert(operators != NULL);
+    Token operators = NULL;
     unsigned operatorsLen = 0;
     
-    Token (*output)[TOKEN_STACK_SIZE] = malloc(TOKEN_STACK_SIZE * sizeof(Token));
-    assert(output != NULL);
+    Token output = NULL;
     unsigned outputLen = 0;
     
     Token nextToken;
@@ -184,33 +183,33 @@ Token parse_infix_expression(Token tokens){
         tokens->next = NULL;
         // if it's not a builtin, stick it in output
         if(tokens->type != BUILTIN){
-            push_token_stack(tokens, output, &outputLen);
+            push_token_stack(tokens, &output, &outputLen);
         } else { // if it's a builtin, do magic
             // check if it's allowed to be here
             ERROR_UNLESS(!can_start_line(tokens->builtin), "statement operators not allowed in expressions")
             if(operatorsLen == 0){
-                push_token_stack(tokens, operators, &operatorsLen);
+                push_token_stack(tokens, &operators, &operatorsLen);
             } else if(tokens->builtin == L_PAREN){
-                push_token_stack(tokens, operators, &operatorsLen);
+                push_token_stack(tokens, &operators, &operatorsLen);
             } else if(tokens->builtin == R_PAREN){
                 // pop operators until L_PAREN
                 free_token(&tokens); // we don't need the R_PAREN
-                while(operatorsLen > 0 && (*operators)[operatorsLen - 1]->builtin != L_PAREN)
-                    pop_operator(operators, &operatorsLen, output, &outputLen);
+                while(operatorsLen > 0 && operators->builtin != L_PAREN)
+                    pop_operator(&operators, &operatorsLen, &output, &outputLen);
                 if(operatorsLen == 0){ // there was no L_PAREN, so error
                     ERROR("mismatched parentheses")
                 } else {
                     // discard the L_PAREN
-                    Token discard = pop_token_stack(operators, &operatorsLen);
+                    Token discard = pop_token_stack(&operators, &operatorsLen);
                     free_token(&discard);
                 }
-            } else if(get_precedence(tokens->builtin) > get_precedence((*operators)[operatorsLen - 1]->builtin)){
-                push_token_stack(tokens, operators, &operatorsLen);
+            } else if(get_precedence(tokens->builtin) > get_precedence(operators->builtin)){
+                push_token_stack(tokens, &operators, &operatorsLen);
             } else {
                 // we are not a parenthesis and we're lower precedence than
                 // the operator on the stack, so pop it and put us there
-                pop_operator(operators, &operatorsLen, output, &outputLen);
-                push_token_stack(tokens, operators, &operatorsLen);
+                pop_operator(&operators, &operatorsLen, &output, &outputLen);
+                push_token_stack(tokens, &operators, &operatorsLen);
             }
         }
         tokens = nextToken;
@@ -218,15 +217,11 @@ Token parse_infix_expression(Token tokens){
     
     // pop all remaining operators
     while(operatorsLen > 0)
-        pop_operator(operators, &operatorsLen, output, &outputLen);
+        pop_operator(&operators, &operatorsLen, &output, &outputLen);
     
     ERROR_UNLESS(outputLen <= 1, "malformed expression") // leftover names or literals, so malformed expression
     
-    Token retval = pop_token_stack(output, &outputLen); // if stack was empty, retval <- NULL
-    
-    //let's not leak memory
-    free(output);
-    free(operators);
+    Token retval = pop_token_stack(&output, &outputLen); // if stack was empty, retval <- NULL
     
     return retval;
 }
